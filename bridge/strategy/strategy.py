@@ -22,6 +22,7 @@ class Strategy:
     ) -> None:
         self.we_active = False
         self.state = 1
+        self.startTime = 0
 
     def process(self, field: fld.Field) -> list[Optional[Action]]:
         """Game State Management"""
@@ -60,38 +61,6 @@ class Strategy:
                 self.run(field, actions)
 
         return actions
-    
-    def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
-        pass
-
-
-    def GK(field: fld.Field, actions: list[Action]):
-        field.allies[const.GK].set_dribbler_speed(0)
-
-        oldBallPos = field.ball_start_point
-        ballPos = field.ball.get_pos()
-        GKPos = field.allies[const.GK].get_pos()
-
-        nearestEnemyRToBall = fld.find_nearest_robot(ballPos, field.active_enemies())
-        enemyRGrabBall = field.is_ball_in(nearestEnemyRToBall)
-
-        if field.is_ball_moves_to_goal() and not enemyRGrabBall:
-            if not aux.is_point_on_line(GKPos, oldBallPos, ballPos, "R"):
-                """ intersept ball"""
-                interseptBallPoint = aux.closest_point_on_line(oldBallPos, ballPos, GKPos, "R")
-                actions[const.GK] = Actions.GoToPoint(interseptBallPoint)
-            else:
-                """grab intersepted ball"""
-                actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg)
-        elif field.is_ball_in(field.allies[const.GK]):
-            doPassNearAllly(field, actions)
-        else:
-            if enemyRGrabBall:
-                """block maybe kick"""
-                pointForGK = aux.nearest_point_in_poly(ballPos, field.ally_goal.hull)
-                actions[const.GK] = Actions.GoToPoint(pointForGK, (ballPos-GKPos).arg)
-                field.allies[const.GK].set_dribbler_speed(1)
-            # else:
 
 
 
@@ -133,7 +102,45 @@ class Strategy:
         # print(aux.get_line_intersection(field.allies[0].get_pos(), field.allies[1].get_pos(), field.ball.get_pos(), field.enemies[0].get_pos(), "LL"))
         # print(aux.closest_point_on_line(field.ball.get_pos(), field.ally_goal.center, field.allies[1].get_pos()))
 
+        # idx = 3
+        # rPos = field.allies[idx].get_pos()
+        # ballPos = field.ball.get_pos()
+        # actions[idx] = Actions.GoToPointIgnore(field.enemies[idx].get_pos(), (ballPos - rPos).arg())
+
         idx = 3
-        rPos = field.allies[idx].get_pos()
-        ballPos = field.ball.get_pos()
-        actions[idx] = Actions.GoToPointIgnore(field.enemies[idx].get_pos(), (ballPos - rPos).arg())
+        posR = field.allies[idx].get_pos()
+        if self.state == 1:
+            """go to high yell point"""
+            a = math.pi/2
+            vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
+            if aux.dist(posR, vect) < 100:
+                self.startTime = time()
+                self.state = 2
+            else:
+                actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        if self.state == 2:
+            """go around yell point"""
+            a = math.pi/2 + time() - self.startTime
+            if a < math.pi *2:
+                vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
+                actions[idx] = Actions.GoToPointIgnore(vect, 0)
+            else:
+                self.state = 3
+        if self.state == 3:
+            """go to low blue point"""
+            a = math.pi *3/2
+            vect = aux.UP * -300 + field.allies[0].get_pos()
+            if aux.dist(posR, vect) < 100:
+                self.startTime = time()
+                self.state = 4
+            else:
+                actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        if self.state == 4:
+            """go around blue point"""
+            a = math.pi *3/2 + time() - self.startTime - math.pi*2
+            if a >= math.pi/2*3 and a < math.pi*2:
+                self.state = 1
+            else:
+                vect = aux.rotate(aux.UP * -300, a) + field.allies[0].get_pos()
+                actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        print(self.state)
