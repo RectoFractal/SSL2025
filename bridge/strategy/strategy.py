@@ -80,3 +80,46 @@ class Strategy:
         - actions[9] = Actions.BallGrab(0.0)
                 The robot number 9 grabs the ball at an angle of 0.0 (it looks to the right, along the OX axis)
         """
+        # field.allies[const.GK].set_dribbler_speed(0)
+
+        # oldBallPos = field.ball_start_point
+        # ballPos = field.ball.get_pos()
+        # GKPos = field.allies[const.GK].get_pos()
+
+        # nearestEnemyRToBall = fld.find_nearest_robot(ballPos, field.active_enemies())
+        # enemyRGrabBall = field.is_ball_in(nearestEnemyRToBall)
+
+        # if field.is_ball_moves_to_goal() and not enemyRGrabBall:
+        #     if not aux.is_point_on_line(GKPos, oldBallPos, ballPos, "R"):
+        #         """ intersept ball"""
+        #         interseptBallPoint = aux.closest_point_on_line(oldBallPos, ballPos, GKPos, "R")
+        #         actions[const.GK] = Actions.GoToPoint(interseptBallPoint)
+        #     else:
+        #         """grab intersepted ball"""
+        #         actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg)
+        # else:
+        #     if enemyRGrabBall:
+        #         """block maybe kick"""
+        #         pointForGK = aux.nearest_point_in_poly(ballPos, field.ally_goal.hull)
+        #         actions[const.GK] = Actions.GoToPoint(pointForGK, (ballPos-GKPos).arg)
+        #         field.allies[const.GK].set_dribbler_speed(1)
+        #     else:
+
+
+        # rPos = field.allies[const.GK]
+        # ballPos = field.ball.get_pos()
+        # print((rPos+ballPos)/2)
+
+        # for i in range(4):
+        #     print(field.ally_goal.hull[i], end="***")
+        # actions[0] = Actions.GoToPoint(aux.Point(500, 500), math.pi / 2)
+
+        # vect = (field.ball.get_pos()-field.allies[0].get_pos())/2
+        # print(vect + field.allies[0].get_pos())
+        # print(aux.get_line_intersection(field.allies[0].get_pos(), field.allies[1].get_pos(), field.ball.get_pos(), field.enemies[0].get_pos(), "LL"))
+        # print(aux.closest_point_on_line(field.ball.get_pos(), field.ally_goal.center, field.allies[1].get_pos()))
+
+        idx = 3
+        rPos = field.allies[idx].get_pos()
+        ballPos = field.ball.get_pos()
+        actions[idx] = Actions.GoToPointIgnore(field.enemies[idx].get_pos(), (ballPos - rPos).arg())
