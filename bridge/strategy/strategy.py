@@ -89,24 +89,13 @@ class Strategy:
                 The robot number 9 grabs the ball at an angle of 0.0 (it looks to the right, along the OX axis)
         """
 
-        # rPos = field.allies[const.GK]
-        # ballPos = field.ball.get_pos()
-        # print((rPos+ballPos)/2)
-
-        # for i in range(4):
-        #     print(field.ally_goal.hull[i], end="***")
-        # actions[0] = Actions.GoToPoint(aux.Point(500, 500), math.pi / 2)
-
-        # vect = (field.ball.get_pos()-field.allies[0].get_pos())/2
-        # print(vect + field.allies[0].get_pos())
-        # print(aux.get_line_intersection(field.allies[0].get_pos(), field.allies[1].get_pos(), field.ball.get_pos(), field.enemies[0].get_pos(), "LL"))
-        # print(aux.closest_point_on_line(field.ball.get_pos(), field.ally_goal.center, field.allies[1].get_pos()))
-
+        """go to enemy and look on ball"""
         # idx = 3
         # rPos = field.allies[idx].get_pos()
         # ballPos = field.ball.get_pos()
         # actions[idx] = Actions.GoToPointIgnore(field.enemies[idx].get_pos(), (ballPos - rPos).arg())
 
+        """do ellips"""
         # idx = 3
         # posR = field.allies[idx].get_pos()
         # if self.state == 1:
@@ -147,6 +136,7 @@ class Strategy:
 
         # field.strategy_image.draw_line(field.allies[const.GK].get_pos(), field.ball.get_pos(), (0, 0, 200))
 
+        """go to ball then to nearest hull"""
         # idx = 3
         # rPos = field.allies[idx].get_pos()
         # ballPos = field.ball.get_pos()
@@ -171,6 +161,7 @@ class Strategy:
         #     case 3:
         #         self.state = 1
 
+        """do giving interstction medians of triangel """
         # yRobot = field.enemies[0]
         # yRobot4 = field.enemies[4]
         # bRobot = field.allies[0]
@@ -196,3 +187,12 @@ class Strategy:
         #     field.strategy_image.draw_line(intersectPoint2, intersectPoint3, (0, 0, 0))
         #     field.strategy_image.draw_line(intersectPoint3, intersectPoint1, (0, 0, 0))
         #     field.strategy_image.draw_circle((intersectPoint2 + intersectPoint1 + intersectPoint3)/3, color=(0, 255, 0), size_in_mms=30)
+
+        """intersept maybe pass"""
+        idx = 3
+        rPos = field.allies[idx].get_pos()
+        ballPos = field.ball.get_pos()
+        enemyRPos = field.allies[0].get_pos()
+        # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
+        pointGo = aux.point_on_line(enemyRPos, ballPos, 1000)
+        actions[idx] = Actions.GoToPoint(pointGo, 0)
