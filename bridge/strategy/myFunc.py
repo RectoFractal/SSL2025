@@ -26,11 +26,13 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
 
     if pointToPass != -1:
         """if enemy r dont prevent pass """
-        actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)# do checking enemy
-        actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
+        actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
+        if not field.is_ball_in(field.allies[idFrom]):
+            """getting a pass"""
+            actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
     # else: # consider this case
 
-def GK(field: fld.Field, actions: list[Action]):
+def GK(field: fld.Field, actions: list[Action]):# do consider ball
     field.allies[const.GK].set_dribbler_speed(0)
 
     oldBallPos = field.ball_start_point
@@ -42,9 +44,13 @@ def GK(field: fld.Field, actions: list[Action]):
 
     if field.is_ball_moves_to_goal() and not enemyRGrabBall:
         if not aux.is_point_on_line(GKPos, oldBallPos, ballPos, "R"):
-            """ intersept ball"""
             interseptBallPoint = aux.closest_point_on_line(oldBallPos, ballPos, GKPos, "R")
-            actions[const.GK] = Actions.GoToPoint(interseptBallPoint)
+            if interseptBallPoint != ballPos:
+                """ intersept ball"""
+                actions[const.GK] = Actions.GoToPoint(interseptBallPoint)
+            else:
+                """grab ball if it maybe in hull and we cant intersept him"""
+                actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg())
         else:
             """grab intersepted ball and pass nearly ally"""
             # actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg)
@@ -52,6 +58,9 @@ def GK(field: fld.Field, actions: list[Action]):
     # elif field.is_ball_in(field.allies[const.GK]):
     #     """"""
     #     doPassNearAllly(field, actions)
+    elif aux.is_point_inside_poly(ballPos, field.ally_goal.hull):
+        """knock out the ball from hull"""
+        doPassNearAllly(field, actions)
     else:
         # if enemyRGrabBall:
         """block maybe kick"""
@@ -60,5 +69,8 @@ def GK(field: fld.Field, actions: list[Action]):
         field.allies[const.GK].set_dribbler_speed(1)
         # else:
 
-# def attacker(field: fld.Field, actions: list[Action], idx):
-    
+def attacker(field: fld.Field, actions: list[Action], idx):
+    if actions[idx] != None:
+        """if we dont send command on this robot"""
+        if fld.find_nearest_robot(field.ball.get_pos(), field.active_team()) == field.allies[idx]:
+            """if nearest to ball bot this"""

@@ -147,26 +147,52 @@ class Strategy:
 
         # field.strategy_image.draw_line(field.allies[const.GK].get_pos(), field.ball.get_pos(), (0, 0, 200))
 
-        idx = 3
-        rPos = field.allies[idx].get_pos()
-        ballPos = field.ball.get_pos()
-        match self.state:
-            case 1:
-                actions[idx] = Actions.GoToPointIgnore(ballPos, 0)
-                if aux.dist(rPos, ballPos) < 100:
-                    self.state += 1
-            case 2:
-                nearestPointAllyHull = aux.nearest_point_in_poly(rPos, field.ally_goal.hull)
-                nearestPointEnemyHull = aux.nearest_point_in_poly(rPos, field.enemy_goal.hull)
-                dist2AllyHull = aux.dist(rPos, nearestPointAllyHull)
-                dist2EnemyHull = aux.dist(rPos, nearestPointEnemyHull)
-                if dist2AllyHull < dist2EnemyHull:
-                    actions[idx] = Actions.GoToPointIgnore(nearestPointAllyHull, 0)
-                    if aux.dist(rPos, nearestPointAllyHull) < 100:
-                        self.state += 1
-                else:
-                    actions[idx] = Actions.GoToPointIgnore(nearestPointEnemyHull, 0)
-                    if aux.dist(rPos, nearestPointEnemyHull) < 100:
-                        self.state += 1
-            case 3:
-                self.state = 1
+        # idx = 3
+        # rPos = field.allies[idx].get_pos()
+        # ballPos = field.ball.get_pos()
+        # match self.state:
+        #     case 1:
+        #         actions[idx] = Actions.GoToPointIgnore(ballPos, 0)
+        #         if aux.dist(rPos, ballPos) < 100:
+        #             self.state += 1
+        #     case 2:
+        #         nearestPointAllyHull = aux.nearest_point_in_poly(rPos, field.ally_goal.hull)
+        #         nearestPointEnemyHull = aux.nearest_point_in_poly(rPos, field.enemy_goal.hull)
+        #         dist2AllyHull = aux.dist(rPos, nearestPointAllyHull)
+        #         dist2EnemyHull = aux.dist(rPos, nearestPointEnemyHull)
+        #         if dist2AllyHull < dist2EnemyHull:
+        #             actions[idx] = Actions.GoToPointIgnore(nearestPointAllyHull, 0)
+        #             if aux.dist(rPos, nearestPointAllyHull) < 100:
+        #                 self.state += 1
+        #         else:
+        #             actions[idx] = Actions.GoToPointIgnore(nearestPointEnemyHull, 0)
+        #             if aux.dist(rPos, nearestPointEnemyHull) < 100:
+        #                 self.state += 1
+        #     case 3:
+        #         self.state = 1
+
+        # yRobot = field.enemies[0]
+        # yRobot4 = field.enemies[4]
+        # bRobot = field.allies[0]
+        # yVect = aux.rotate(aux.RIGHT, yRobot.get_angle())*1000 + yRobot.get_pos()
+        # y4Vect = aux.rotate(aux.RIGHT, yRobot4.get_angle())*1000 + yRobot4.get_pos()
+        # bVect = aux.rotate(aux.RIGHT, bRobot.get_angle())*1000 + bRobot.get_pos()
+        # intersectPoint1 = aux.get_line_intersection(yRobot.get_pos(), yVect, bRobot.get_pos(), bVect, "LL")
+        # intersectPoint2 = aux.get_line_intersection(yRobot.get_pos(), yVect, yRobot4.get_pos(), y4Vect, "LL")
+        # intersectPoint3 = aux.get_line_intersection(yRobot4.get_pos(), y4Vect, bRobot.get_pos(), bVect, "LL")
+        # # field.strategy_image.draw_line(yRobot.get_pos(), yVect, (200, 200, 0))
+        # # field.strategy_image.draw_line(bRobot.get_pos(), bVect, (0, 0, 200))
+        # # if intersectPoint1 != None:
+        # #     field.strategy_image.draw_line(yRobot.get_pos(), intersectPoint1, (200, 200, 200))
+        # #     field.strategy_image.draw_line(bRobot.get_pos(), intersectPoint1, (200, 200, 200))
+        # # if intersectPoint2 != None:
+        # #     field.strategy_image.draw_line(yRobot.get_pos(), intersectPoint2, (0, 0, 0))
+        # #     field.strategy_image.draw_line(bRobot.get_pos(), intersectPoint2, (0, 0, 0))
+        # # if intersectPoint3 != None:
+        # #     field.strategy_image.draw_line(yRobot.get_pos(), intersectPoint3, (0, 0, 0))
+        # #     field.strategy_image.draw_line(bRobot.get_pos(), intersectPoint3, (0, 0, 0))
+        # if intersectPoint1 != None and intersectPoint2 != None and intersectPoint3 != None:
+        #     field.strategy_image.draw_line(intersectPoint1, intersectPoint2, (0, 0, 0))
+        #     field.strategy_image.draw_line(intersectPoint2, intersectPoint3, (0, 0, 0))
+        #     field.strategy_image.draw_line(intersectPoint3, intersectPoint1, (0, 0, 0))
+        #     field.strategy_image.draw_circle((intersectPoint2 + intersectPoint1 + intersectPoint3)/3, color=(0, 255, 0), size_in_mms=30)
