@@ -93,7 +93,7 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
                 """if noone enemy r prevent this kick"""
                 min_dist = aux.dist(pointFrom, point)
                 closest = point
-    # return closest
+    return closest
     if closest != None:
         field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
     else:
@@ -101,18 +101,28 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
 
 def attacker(field: fld.Field, actions: list[Action], idx):
     enemys = field.active_enemies(True)
-    allies = field.active_allies()
+    allies = field.allies
     thisR = allies[idx]
-    if actions[idx] != None:
+    if actions[idx] == None:
+        # print(1)
         """if we dont send command on this robot"""
         allR = enemys.copy() + allies.copy()
         nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
         if nearestRToBall == thisR:
+            # print(2)
             """if nearest to ball bot this"""
             if field.is_ball_in(thisR):
+                # print(3)
                 """if this robot have ball"""
                 pointForScore = findPointForScore(field, thisR.get_pos())
                 if pointForScore != None:
+                    # print(4)
                     """try do score if r can"""
                     actions[idx] = Actions.Kick(pointForScore)
-                
+                else:
+                    """do pass or come closer to enemy goal"""
+            else:
+                actions[idx] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
+        else:
+            """if nearest R our open for pass"""
+            """if nearest R enenmy intersept maybe pass or try take ball"""
