@@ -12,13 +12,16 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     pointFrom = exclude.get_pos()
     pointToPass = points[0]
     min_dist = 10e10
-    for _, point in enumerate(points):
-        if point in exclude:
+    for _, robot in enumerate(points):
+        if robot in exclude:
             continue
+        point = robot.get_pos()
         if aux.dist(pointFrom, point) < min_dist:
             min_dist = aux.dist(pointFrom, point)
             pointToPass = point
+            rToPass = robot
     actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)# do checking enemy
+    actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
 
 
 def GK(field: fld.Field, actions: list[Action]):
