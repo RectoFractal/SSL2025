@@ -197,18 +197,28 @@ class Strategy:
         # pointGo = aux.point_on_line(ballPos, enemyRPos, -300)
         # actions[idx] = Actions.GoToPoint(pointGo, 0)
 
-        idx = 3
-        rPos = field.allies[idx].get_pos()
-        findPointForScore(field, rPos)
-        actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw, 0)
-        # actions[idx] = Actions.GoToPointIgnore(aux.Point(0, 0), 0)
-        # print(len(aux.line_circle_intersect(rPos, field.enemy_goal.center, field.enemies[const.ENEMY_GK].get_pos(), const.ROBOT_R*1.2, "S")))
-        # print([robot.r_id for robot in field.active_enemies(True)])
-        if self.state == 1:
-            actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw_up, 0)
-            if aux.dist(rPos, field.enemy_goal.frw_up) < 100:
-                self.state = 2
-        if self.state == 2:
-            actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw_down, 0)
-            if aux.dist(rPos, field.enemy_goal.frw_down) < 100:
-                self.state = 1
+        """patrul enemy hull for test findPointForScore"""
+        # idx = 3
+        # rPos = field.allies[idx].get_pos()
+        # findPointForScore(field, rPos)
+        # actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw, 0)
+        # # actions[idx] = Actions.GoToPointIgnore(aux.Point(0, 0), 0)
+        # # print(len(aux.line_circle_intersect(rPos, field.enemy_goal.center, field.enemies[const.ENEMY_GK].get_pos(), const.ROBOT_R*1.2, "S")))
+        # # print([robot.r_id for robot in field.active_enemies(True)])
+        # if self.state == 1:
+        #     actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw_up, 0)
+        #     if aux.dist(rPos, field.enemy_goal.frw_up) < 100:
+        #         self.state = 2
+        # if self.state == 2:
+        #     actions[idx] = Actions.GoToPointIgnore(field.enemy_goal.frw_down, 0)
+        #     if aux.dist(rPos, field.enemy_goal.frw_down) < 100:
+        #         self.state = 1
+
+        """intersept maybe pass 2.0"""
+        # idx = 3
+        # rPos = field.allies[idx].get_pos()
+        # ballPos = field.ball.get_pos()
+        # enemyRWithBallPos = field.allies[0].get_pos()
+        # # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
+        # pointGo = aux.point_on_line(enemyRWithBallPos, , -300)
+        # actions[idx] = Actions.GoToPoint(pointGo, 0)
