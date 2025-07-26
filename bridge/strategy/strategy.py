@@ -107,40 +107,66 @@ class Strategy:
         # ballPos = field.ball.get_pos()
         # actions[idx] = Actions.GoToPointIgnore(field.enemies[idx].get_pos(), (ballPos - rPos).arg())
 
+        # idx = 3
+        # posR = field.allies[idx].get_pos()
+        # if self.state == 1:
+        #     """go to high yell point"""
+        #     a = math.pi/2
+        #     vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
+        #     if aux.dist(posR, vect) < 100:
+        #         self.startTime = time()
+        #         self.state = 2
+        #     else:
+        #         actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        # if self.state == 2:
+        #     """go around yell point"""
+        #     a = math.pi/2 + time() - self.startTime
+        #     if a < math.pi *2:
+        #         vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
+        #         actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        #     else:
+        #         self.state = 3
+        # if self.state == 3:
+        #     """go to low blue point"""
+        #     a = math.pi *3/2
+        #     vect = aux.UP * -300 + field.allies[0].get_pos()
+        #     if aux.dist(posR, vect) < 100:
+        #         self.startTime = time()
+        #         self.state = 4
+        #     else:
+        #         actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        # if self.state == 4:
+        #     """go around blue point"""
+        #     a = math.pi *3/2 + time() - self.startTime - math.pi*2
+        #     if a >= math.pi/2*3 and a < math.pi*2:
+        #         self.state = 1
+        #     else:
+        #         vect = aux.rotate(aux.UP * -300, a) + field.allies[0].get_pos()
+        #         actions[idx] = Actions.GoToPointIgnore(vect, 0)
+        # print(self.state)
+
+        # field.strategy_image.draw_line(field.allies[const.GK].get_pos(), field.ball.get_pos(), (0, 0, 200))
+
         idx = 3
-        posR = field.allies[idx].get_pos()
-        if self.state == 1:
-            """go to high yell point"""
-            a = math.pi/2
-            vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
-            if aux.dist(posR, vect) < 100:
-                self.startTime = time()
-                self.state = 2
-            else:
-                actions[idx] = Actions.GoToPointIgnore(vect, 0)
-        if self.state == 2:
-            """go around yell point"""
-            a = math.pi/2 + time() - self.startTime
-            if a < math.pi *2:
-                vect = aux.rotate(aux.RIGHT * 300, a) + field.enemies[0].get_pos()
-                actions[idx] = Actions.GoToPointIgnore(vect, 0)
-            else:
-                self.state = 3
-        if self.state == 3:
-            """go to low blue point"""
-            a = math.pi *3/2
-            vect = aux.UP * -300 + field.allies[0].get_pos()
-            if aux.dist(posR, vect) < 100:
-                self.startTime = time()
-                self.state = 4
-            else:
-                actions[idx] = Actions.GoToPointIgnore(vect, 0)
-        if self.state == 4:
-            """go around blue point"""
-            a = math.pi *3/2 + time() - self.startTime - math.pi*2
-            if a >= math.pi/2*3 and a < math.pi*2:
+        rPos = field.allies[idx].get_pos()
+        ballPos = field.ball.get_pos()
+        match self.state:
+            case 1:
+                actions[idx] = Actions.GoToPointIgnore(ballPos, 0)
+                if aux.dist(rPos, ballPos) < 100:
+                    self.state += 1
+            case 2:
+                nearestPointAllyHull = aux.nearest_point_in_poly(rPos, field.ally_goal.hull)
+                nearestPointEnemyHull = aux.nearest_point_in_poly(rPos, field.enemy_goal.hull)
+                dist2AllyHull = aux.dist(rPos, nearestPointAllyHull)
+                dist2EnemyHull = aux.dist(rPos, nearestPointEnemyHull)
+                if dist2AllyHull < dist2EnemyHull:
+                    actions[idx] = Actions.GoToPointIgnore(nearestPointAllyHull, 0)
+                    if aux.dist(rPos, nearestPointAllyHull) < 100:
+                        self.state += 1
+                else:
+                    actions[idx] = Actions.GoToPointIgnore(nearestPointEnemyHull, 0)
+                    if aux.dist(rPos, nearestPointEnemyHull) < 100:
+                        self.state += 1
+            case 3:
                 self.state = 1
-            else:
-                vect = aux.rotate(aux.UP * -300, a) + field.allies[0].get_pos()
-                actions[idx] = Actions.GoToPointIgnore(vect, 0)
-        print(self.state)
