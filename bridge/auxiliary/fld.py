@@ -198,14 +198,14 @@ class Field:
 
     def active_allies(self, include_gk: bool = False) -> list[rbt.Robot]:
         """return allies on field"""
-        robots = self._active_allies
+        robots = self._active_allies.copy()
         if include_gk and self.allies[self.gk_id].is_used():
             robots.append(self.allies[self.gk_id])
         return robots
 
     def active_enemies(self, include_gk: bool = False) -> list[rbt.Robot]:
         """return enemies on field"""
-        robots = self._active_enemies
+        robots = self._active_enemies.copy()
         if include_gk and self.enemies[self.enemy_gk_id].is_used():
             robots.append(self.enemies[self.enemy_gk_id])
         return robots

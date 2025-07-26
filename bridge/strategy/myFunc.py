@@ -69,8 +69,50 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
         field.allies[const.GK].set_dribbler_speed(1)
         # else:
 
+def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
+    """
+    Find the nearest point to a given point (center) from a list, optionally excluding some points.
+
+    Args:
+        center (Point): The reference point.
+        points (list[Point]): The list of candidate points.
+        exclude (Optional[list[Point]]): Points to ignore during the search (default is None).
+
+    Returns:
+        Point: The closest point to `center` that is not in `exclude`.
+    """
+    qPoint = 10
+    d = field.enemy_goal.up.y - field.enemy_goal.down.y
+    points = [aux.Point(field.enemy_goal.up.x, field.enemy_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
+    enemys = field.active_enemies(True)
+    closest = None
+    min_dist = 10e10
+    for _, point in enumerate(points):
+        if aux.dist(pointFrom, point) < min_dist:
+            if all(len(aux.line_circle_intersect(pointFrom, point, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) == 0 for enemyR in enemys):
+                """if noone enemy r prevent this kick"""
+                min_dist = aux.dist(pointFrom, point)
+                closest = point
+    # return closest
+    if closest != None:
+        field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
+    else:
+        field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
+
 def attacker(field: fld.Field, actions: list[Action], idx):
+    enemys = field.active_enemies(True)
+    allies = field.active_allies()
+    thisR = allies[idx]
     if actions[idx] != None:
         """if we dont send command on this robot"""
-        if fld.find_nearest_robot(field.ball.get_pos(), field.active_team()) == field.allies[idx]:
+        allR = enemys.copy() + allies.copy()
+        nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
+        if nearestRToBall == thisR:
             """if nearest to ball bot this"""
+            if field.is_ball_in(thisR):
+                """if this robot have ball"""
+                pointForScore = findPointForScore(field, thisR.get_pos())
+                if pointForScore != None:
+                    """try do score if r can"""
+                    actions[idx] = Actions.Kick(pointForScore)
+                
