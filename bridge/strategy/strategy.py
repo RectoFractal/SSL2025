@@ -265,7 +265,7 @@ class Strategy:
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
 
         if field.ally_color == const.Color.BLUE:
-            pass
+            """code for blue"""
             # self.attacker(field, actions, 0, 1)
             # self.attacker(field, actions, 1, 0)
             # """do pass"""
@@ -296,7 +296,22 @@ class Strategy:
             # # print(actions[0])
             # # actions[0] = Actions.Kick(field.enemy_goal.center)
         else:
-            GK(field, actions)
+            # pointForGK = aux.nearest_point_on_poly(field.ball.get_pos(), field.ally_goal.hull)
+            # field.strategy_image.draw_line(pointForGK, field.ball.get_pos(), color=(200, 0, 200), size_in_pixels=20)
+            # actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (field.ball.get_pos()-field.allies[const.GK].get_pos()).arg())
+            # field.allies[const.GK].set_dribbler_speed(1)
+
+            rPos = field.allies[1].get_pos()
+            nearestScorePoint = None
+            firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
+            secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
+            if aux.dist(rPos, firstScorePoint) < aux.dist(rPos, secondScorePoint):
+                field.strategy_image.draw_line(rPos, firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+            else:
+                field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+
+            # GK(field, actions)
+
     def doPass(self, field, actions, idxThisR):
         if field.is_ball_in(field.allies[self.idDoPass]):
             """do pass"""
@@ -335,7 +350,7 @@ class Strategy:
             """if we dont send command on this robot"""
             allR = enemys.copy() + allies.copy()
             nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
-            if nearestRToBall == thisR and self.idGettingPass == None:
+            if nearestRToBall == thisR:
                 """if nearest to ball bot this"""
                 if field.is_ball_in(thisR):
                     """if this robot have ball"""
@@ -345,12 +360,27 @@ class Strategy:
                         field.strategy_image.send_telemetry("status", "try do score if r can")
                         actions[idxThisR] = Actions.Kick(pointForScore)
                     else:
+                        """if this r cant do score"""
                         pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
                         if pointForScoreForOtherAttacker != None:
+                            """if other attacker can do score"""
                             self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
-                            if self.idGettingPass != None:
+                            if self.idGettingPass != None and self.idGettingPass == None:
+                                """if we dont have already done pass"""
                                 self.idDoPass = idxThisR
                                 self.idGettingPass = self.idGettingPass
+                            nearestEnemyRToThisAttacker = fld.find_nearest_robot(thisR.get_pos(), enemys)
+                            nearestEnemyRToOtherAttacker = fld.find_nearest_robot(otherAttackerR.get_pos(), enemys)
+                        elif aux.dist(thisR.get_pos(), nearestEnemyRToThisAttacker) < aux.dist(otherAttackerR.get_pos(), nearestEnemyRToOtherAttacker):# TODO
+                            """if enemys r from this r on longer dist to other attacker"""
+                            nearestScorePoint = None
+                            firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
+                            secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
+                            if aux.dist(thisR.get_pos(), firstScorePoint) < aux.dist(thisR.get_pos(), secondScorePoint):
+                                field.strategy_image.draw_line(thisR.get_pos(), firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+                            else:
+                                field.strategy_image.draw_line(thisR.get_pos(), secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+                            # nearestScorePoint = TODO
                             field.strategy_image.send_telemetry("status", "do pass or come closer to enemy goal")
                         """do pass or come closer to enemy goal"""
                         # DONT DONE
