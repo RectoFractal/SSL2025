@@ -22,7 +22,7 @@ class Strategy:
     ) -> None:
         self.we_active = False
         self.state = 1
-        self.startTime = 0
+        self.idGettingPass = None
 
     def process(self, field: fld.Field) -> list[Optional[Action]]:
         """Game State Management"""
@@ -189,13 +189,13 @@ class Strategy:
         #     field.strategy_image.draw_circle((intersectPoint2 + intersectPoint1 + intersectPoint3)/3, color=(0, 255, 0), size_in_mms=30)
 
         """intersept maybe pass"""
-        idx = 5
-        rPos = field.allies[idx].get_pos()
-        ballPos = field.ball.get_pos()
-        enemyRPos = field.allies[3].get_pos()
-        # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
-        pointGo = aux.point_on_line(ballPos, enemyRPos, 300)
-        actions[idx] = Actions.GoToPoint(pointGo, 0)
+        # idx = 5
+        # rPos = field.allies[idx].get_pos()
+        # ballPos = field.ball.get_pos()
+        # enemyRPos = field.allies[3].get_pos()
+        # # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
+        # pointGo = aux.point_on_line(ballPos, enemyRPos, 300)
+        # actions[idx] = Actions.GoToPoint(pointGo, 0)
 
         """patrul enemy hull for test findPointForScore"""
         # idx = 3
@@ -232,30 +232,54 @@ class Strategy:
         # # actions[0] = Actions.GoToPoint(aux.Point(0, 0), 0)
 
         """open for pass"""
-        idx = 3
-        ballPos = field.ball.get_pos()
-        enemysR = field.active_enemies(True)
-        rPos = field.allies[idx].get_pos()
-        rWhichPreventPass = None
-        vectFromRToBall = ballPos - rPos
-        # for enemyR in enemysR: # NORM CODE
-        #     if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
-        #         rWhichPreventPass = enemyR
-        if len(aux.line_circle_intersect(ballPos, rPos, field.allies[5].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
-            rWhichPreventPass = field.allies[5]
-        if rWhichPreventPass != None:
-            if aux.get_angle_between_points(rWhichPreventPass.get_pos(), ballPos, rPos) > 0:
-                """open to left"""
-                vect = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
-                pointToGo = vect*700 + rPos
-                if pointToGo.x*field.polarity > 0:
-                    pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+        # idx = 3
+        # ballPos = field.ball.get_pos()
+        # enemysR = field.active_enemies(True)
+        # rPos = field.allies[idx].get_pos()
+        # rWhichPreventPass = None
+        # vectFromRToBall = ballPos - rPos
+        # # for enemyR in enemysR: # NORM CODE
+        # #     if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
+        # #         rWhichPreventPass = enemyR
+        # if len(aux.line_circle_intersect(ballPos, rPos, field.allies[5].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
+        #     rWhichPreventPass = field.allies[5]
+        # if rWhichPreventPass != None:
+        #     if aux.get_angle_between_points(rWhichPreventPass.get_pos(), ballPos, rPos) > 0:
+        #         """open to left"""
+        #         vect = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
+        #         pointToGo = vect*700 + rPos
+        #         if pointToGo.x*field.polarity > 0:
+        #             pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+        #     else:
+        #         """open to right"""
+        #         vect = aux.rotate(vectFromRToBall.unity(), math.pi/2)
+        #         pointToGo = vect*700 + rPos
+        #         if pointToGo.x*field.polarity > 0:
+        #             pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+        #     actions[idx] = Actions.GoToPoint(pointToGo, 0)
+        # else:
+        #     actions[idx] = Actions.GoToPoint(field.allies[idx].get_pos(), 0)
+
+        """test score goal"""
+        # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
+
+        """do pass"""
+        if self.idGettingPass != None:
+            if not field.is_ball_in(self.idGettingPass):
+                field.strategy_image.send_telemetry("status pass", "getting pass")
+                actions[self.idGettingPass] = Actions.BallGrab(field.allies[self.idGettingPass]-field.allies[self.idGettingPass].get_pos().arg())
             else:
-                """open to right"""
-                vect = aux.rotate(vectFromRToBall.unity(), math.pi/2)
-                pointToGo = vect*700 + rPos
-                if pointToGo.x*field.polarity > 0:
-                    pointToGo = aux.rotate(vect, math.pi)*700 + rPos
-            actions[idx] = Actions.GoToPoint(pointToGo, 0)
+                self.idGettingPass = None
+        actions[0] = Actions.GoToPoint(aux.Point(0, 0), 0)
+        # findPointForScore(field, field.ball.get_pos())
+        # attacker(field, actions, 0, 1)
+        
+        if field.is_ball_in(field.allies[0]):
+            field.strategy_image.send_telemetry("status", "pass")
+            doPassNearAllly(field, actions, Strategy, 0)
         else:
-            actions[idx] = Actions.GoToPoint(field.allies[idx].get_pos(), 0)
+            field.strategy_image.send_telemetry("status", "grab")
+            actions[0] = Actions.BallGrab((field.ball.get_pos() - field.allies[0].get_pos()).arg())  
+        # actions[0] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
+        # print(actions[0])
+        # actions[0] = Actions.Kick(field.enemy_goal.center)
