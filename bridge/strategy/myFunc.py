@@ -99,11 +99,11 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
     else:
         field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
 
-def attacker(field: fld.Field, actions: list[Action], idx):
+def attacker(field: fld.Field, actions: list[Action], idxThisR, idxOtherAttacker):
     enemys = field.active_enemies(True)
     allies = field.allies
-    thisR = allies[idx]
-    if actions[idx] == None:
+    thisR = allies[idxThisR]
+    if actions[idxThisR] == None:
         # print(1)
         """if we dont send command on this robot"""
         allR = enemys.copy() + allies.copy()
@@ -118,11 +118,12 @@ def attacker(field: fld.Field, actions: list[Action], idx):
                 if pointForScore != None:
                     # print(4)
                     """try do score if r can"""
-                    actions[idx] = Actions.Kick(pointForScore)
+                    actions[idxThisR] = Actions.Kick(pointForScore)
                 else:
                     """do pass or come closer to enemy goal"""
             else:
-                actions[idx] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
+                """if this r is nearest to ball, but dont grab him, grab ball"""
+                actions[idxThisR] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
         else:
             """if nearest R our open for pass"""
-            """if nearest R enenmy intersept maybe pass or try take ball"""
+            """if nearest R enenmy intersept maybe pass or try take ball, depend from dist"""
