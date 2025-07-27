@@ -6,7 +6,7 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
-def doPassNearAllly(field: fld.Field, actions: list[Action], Strategy, idFrom = const.GK):
+def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     points = field.active_allies()
     exclude = [idFrom]
     pointFrom = field.allies[idFrom].get_pos()
@@ -29,14 +29,15 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], Strategy, idFrom = 
         """if enemy r dont prevent pass """
         field.strategy_image.send_telemetry("status pass", "have point")
         # field.strategy_image.draw_line(pointFrom, pointToPass, color=(255, 0, 0))
-        field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
+        # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
         actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
-        if not field.is_ball_in(field.allies[idFrom]):
+        if not field.is_ball_in(field.allies[rToPass.r_id]):
             """getting a pass"""
-            Strategy.idGettingPass = rToPass.r_id
+            # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
             # actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
     else:
         field.strategy_image.send_telemetry("status pass", "dont have point")
+    return rToPass.r_id
     # else: # consider this case
 
 def GK(field: fld.Field, actions: list[Action]):# do consider ball
@@ -72,7 +73,7 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
         # if enemyRGrabBall:
         """block maybe kick"""
         pointForGK = aux.nearest_point_in_poly(ballPos, field.ally_goal.hull)
-        actions[const.GK] = Actions.GoToPoint(pointForGK, (ballPos-GKPos).arg)
+        actions[const.GK] = Actions.GoToPoint(pointForGK, (ballPos-GKPos).arg())
         field.allies[const.GK].set_dribbler_speed(1)
         # else:
 
@@ -105,38 +106,3 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
     else:
         field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
     return closest
-
-def attacker(field: fld.Field, actions: list[Action], idxThisR, idxOtherAttacker):
-    enemys = field.active_enemies(True)
-    allies = field.allies
-    thisR = allies[idxThisR]
-    otherAttackerR = allies[idxOtherAttacker]
-    if actions[idxThisR] == None:
-        """if we dont send command on this robot"""
-        allR = enemys.copy() + allies.copy()
-        nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
-        if nearestRToBall == thisR:
-            """if nearest to ball bot this"""
-            if field.is_ball_in(thisR):
-                """if this robot have ball"""
-                pointForScore = findPointForScore(field, thisR.get_pos())
-                if pointForScore != None:
-                    """try do score if r can"""
-                    field.strategy_image.send_telemetry("status", "try do score if r can")
-                    actions[idxThisR] = Actions.Kick(pointForScore)
-                else:
-                    pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
-                    if pointForScoreForOtherAttacker != None:
-                        doPassNearAllly(field, actions, idxThisR)
-                        field.strategy_image.send_telemetry("status", "do pass or come closer to enemy goal")
-                    """do pass or come closer to enemy goal"""
-                    # DONT DONE
-            else:
-                """if this r is nearest to ball, but dont grab him, grab ball"""
-                field.strategy_image.send_telemetry("status", "if this r is nearest to ball, but dont grab him, grab ball")
-                actions[idxThisR] = Actions.BallGrab((field.ball.get_pos() - thisR.get_pos()).arg())  
-        else:
-            field.strategy_image.send_telemetry("status", "if nearest R our open for pass")
-            # DONT DONE
-            """if nearest R our open for pass"""
-            """if nearest R enenmy intersept maybe pass or try take ball, depend from dist"""
