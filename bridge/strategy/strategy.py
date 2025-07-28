@@ -267,7 +267,7 @@ class Strategy:
 
         if field.ally_color == const.Color.BLUE:
             """code for blue"""
-            # self.attacker(field, actions, 0, 1)
+            self.attacker(field, actions, 0, 1)
             # self.attacker(field, actions, 1, 0)
             # """do pass"""
             # if self.idGettingPass != None:
@@ -297,6 +297,7 @@ class Strategy:
             # # print(actions[0])
             # # actions[0] = Actions.Kick(field.enemy_goal.center)
         else:
+            """code for yellow"""
             # pointForGK = aux.nearest_point_on_poly(field.ball.get_pos(), field.ally_goal.hull)
             # field.strategy_image.draw_line(pointForGK, field.ball.get_pos(), color=(200, 0, 200), size_in_pixels=20)
             # actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (field.ball.get_pos()-field.allies[const.GK].get_pos()).arg())
@@ -311,7 +312,7 @@ class Strategy:
             # else:
             #     field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
 
-            self.GKLastState = GK(field, actions, self.GKLastState)
+            # self.GKLastState = GK(field, actions, self.GKLastState)
             # self.attacker(field, actions, 0, 2)
             # self.attacker(field, actions, 2, 0)
 

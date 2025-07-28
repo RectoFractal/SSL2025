@@ -218,7 +218,7 @@ class Actions:
             self.kick_args = (target_pos, voltage, is_pass, is_upper)
 
         def use_behavior_of(self, domain: ActionDomain, current_action: ActionValues) -> list["Action"]:
-            return [KickActions.Straight(*self.kick_args)]
+            return [KickActions.delayedKick(*self.kick_args)]
 
 
 class KickActions:
@@ -255,7 +255,19 @@ class KickActions:
             ]
 
             return actions
+        
+    class delayedKick(Kick):
+        
+        def use_behavior_of(self, domain: ActionDomain, current_action: ActionValues) -> list["Action"]:
+            kick_angle = aux.angle_to_point(domain.field.ball.get_pos(), self.target_pos)
 
+            actions = [
+                Actions.BallGrab(kick_angle),
+                DumbActions.delayedShootAction(kick_angle, self.is_upper),
+                DumbActions.ControlVoltageAction(domain.field.ball.get_pos(), self.voltage, self.pass_pos),
+            ]
+
+            return actions
 
 class DumbActions:
     """User-unavailable actions, are used in Actions"""
@@ -277,6 +289,36 @@ class DumbActions:
             return domain.field.is_ball_in(domain.robot) and is_aligned
 
         def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
+            current_action.auto_kick = self.autokick
+
+    timer1: Optional[float] = None
+    oldAligned: bool = False
+
+    class delayedShootAction(Action):
+        """Shoot the target when kick is aligned"""
+
+        def __init__(self, target_angle: float, is_upper: bool = False, angle_bounds: Optional[float] = None) -> None:
+            self.target_angle = target_angle
+            self.autokick = 2 if is_upper else 1
+            self.angle_bounds = angle_bounds
+
+        def is_defined(self, domain: ActionDomain) -> bool:
+            is_aligned = (
+                domain.robot.is_kick_aligned_by_angle(self.target_angle, angle_bounds=self.angle_bounds)
+                if self.angle_bounds is not None
+                else domain.robot.is_kick_aligned_by_angle(self.target_angle)
+            )
+            if is_aligned and not DumbActions.oldAligned:
+                DumbActions.oldAligned = True
+                DumbActions.timer1 = time()
+            if not is_aligned:
+                DumbActions.timer1 = None
+                DumbActions.oldAligned = False
+            return domain.field.is_ball_in(domain.robot) and is_aligned and time()-DumbActions.timer1>0.1
+
+        def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
+            DumbActions.timer1 = None
+            DumbActions.oldAligned = False
             current_action.auto_kick = self.autokick
 
     class ControlVoltageAction(Action):
