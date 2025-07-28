@@ -23,7 +23,8 @@ class Strategy:
         self.we_active = False
         self.state = 1
         self.idGettingPass = None
-        self.idDoPass = 0
+        self.idDoPass = None
+        self.GKLastState = None
 
     def process(self, field: fld.Field) -> list[Optional[Action]]:
         """Game State Management"""
@@ -310,7 +311,9 @@ class Strategy:
             # else:
             #     field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
 
-            GK(field, actions)
+            self.GKLastState = GK(field, actions, self.GKLastState)
+            # self.attacker(field, actions, 0, 2)
+            # self.attacker(field, actions, 2, 0)
 
     def doPass(self, field, actions, idxThisR):
         if field.is_ball_in(field.allies[self.idDoPass]):

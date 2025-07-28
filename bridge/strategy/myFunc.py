@@ -6,6 +6,33 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
+def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.GK):
+    rToPass = None
+    pointToPass = None
+    if idFrom != const.GK:
+        nearestR = maybePassPoints
+        # for nearestR in maybePassPoints:
+        maybePassPoint = nearestR.get_pos()
+
+        for enemyR in enemys:
+            if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
+                break
+        else:
+            rToPass = nearestR
+            pointToPass = maybePassPoint
+    else:
+        for nearestR in maybePassPoints:
+            maybePassPoint = nearestR.get_pos()
+
+            for enemyR in enemys:
+                if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
+                    break
+            else:
+                rToPass = nearestR
+                pointToPass = maybePassPoint
+                break
+    return [rToPass, pointToPass]
+
 def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     points = field.active_allies()
     exclude = [idFrom]
@@ -13,18 +40,15 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     pointFrom = field.ball.get_pos()
     enemys = field.active_enemies()
     pointToPass = None
+    rToPass = None
 
-    maybePassPoints = fld.find_nearest_robot(pointFrom, points, avoid=exclude)
-    nearestR = maybePassPoints
-    # for nearestR in maybePassPoints:
-    maybePassPoint = nearestR.get_pos()
-    for enemyR in enemys:
-        if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
-            break
+    if idFrom == const.GK:
+        maybePassPoints = fld.find_nearest_robots(pointFrom, points)
+        # maybePassPoints = maybePassPoints.remove(field.allies[idFrom])
     else:
-        rToPass = nearestR
-        pointToPass = maybePassPoint
-        # break
+        maybePassPoints = fld.find_nearest_robot(pointFrom, points, avoid=exclude)
+    
+    rToPass, pointToPass = getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom)
 
     if pointToPass != None:
         """if enemy r dont prevent pass """
@@ -38,10 +62,15 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
             # actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
     else:
         field.strategy_image.send_telemetry("status pass", "dont have point")
-    return rToPass.r_id
+    if rToPass != None:
+        return rToPass.r_id
+    else:
+        return None
     # else: # consider this case
 
-def GK(field: fld.Field, actions: list[Action]):# do consider ball
+def GK(field: fld.Field, actions: list[Action], oldGKState):# do consider ball
+    GKState = None
+
     field.allies[const.GK].set_dribbler_speed(0)
 
     oldBallPos = field.ball_start_point
@@ -56,8 +85,9 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
     # field.strategy_image.draw_circle(nearestRToBall.get_pos(), color=(0, 255, 0), size_in_mms=50)
     enemyRGrabBall = field.is_ball_in(nearestEnemyRToBall)
 
-    if nearestRToBall == field.allies[const.GK]:
-        field.strategy_image.send_telemetry("GK State", "Pass")
+    if nearestRToBall == field.allies[const.GK] and oldGKState != "Intersept":
+        # field.strategy_image.send_telemetry("GK State", "Pass")
+        GKState = "Pass"
         doPassNearAllly(field, actions)
     elif field.is_ball_moves_to_goal() and not enemyRGrabBall:
         if not aux.is_point_on_line(GKPos, oldBallPos, ballPos, "R"):
@@ -65,15 +95,18 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
             field.strategy_image.draw_circle(interseptBallPoint, color=(255, 0, 0), size_in_mms=50)
             # field.strategy_image.draw_line(GKPos, interseptBallPoint, color=(0, 0, 200), size_in_pixels=20)
             if interseptBallPoint != ballPos:
-                field.strategy_image.send_telemetry("GK State", "Intersept")
+                # field.strategy_image.send_telemetry("GK State", "Intersept")
+                GKState = "Intersept"
                 """ intersept ball"""
                 actions[const.GK] = Actions.GoToPointIgnore(interseptBallPoint, (ballPos-interseptBallPoint).arg())
             else:
-                field.strategy_image.send_telemetry("GK State", "Grab ball")
+                GKState = "Grab ball"
+                # field.strategy_image.send_telemetry("GK State", "Grab ball")
                 """grab ball if it maybe in hull and we cant intersept him"""
                 actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg())
         else:
-            field.strategy_image.send_telemetry("GK State", "Pass interstpted ball")
+            GKState = "Pass interstpted ball"
+            # field.strategy_image.send_telemetry("GK State", "Pass interstpted ball")
             """grab intersepted ball and pass nearly ally"""
             # actions[const.GK] = Actions.BallGrab((ballPos-GKPos).arg)
             doPassNearAllly(field, actions)
@@ -81,11 +114,13 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
     #     """"""
     #     doPassNearAllly(field, actions)
     elif aux.is_point_inside_poly(ballPos, field.ally_goal.hull):
-        field.strategy_image.send_telemetry("GK State", "Knock out ball")
+        GKState = "Knock out ball"
+        # field.strategy_image.send_telemetry("GK State", "Knock out ball")
         """knock out the ball from hull"""
         doPassNearAllly(field, actions)
     else:
-        field.strategy_image.send_telemetry("GK State", "Block maybe kick")
+        GKState = "block maybe kick"
+        # field.strategy_image.send_telemetry("GK State", "Block maybe kick")
         # if enemyRGrabBall:
         """block maybe kick"""
         # pointForGK = aux.nearest_point_on_poly(ballPos, field.ally_goal.hull)
@@ -96,6 +131,8 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
         actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
         field.allies[const.GK].set_dribbler_speed(1)
         # else:
+    field.strategy_image.send_telemetry("GK State", GKState)
+    return GKState
 
 def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
     """
