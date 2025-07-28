@@ -160,6 +160,6 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
                 closest = point
     if closest != None:
         field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
-    else:
-        field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
+    # else:
+    #     field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
     return closest
