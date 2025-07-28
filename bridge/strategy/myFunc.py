@@ -9,7 +9,8 @@ from bridge.router.base_actions import Action, Actions, KickActions  # type: ign
 def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     points = field.active_allies()
     exclude = [idFrom]
-    pointFrom = field.allies[idFrom].get_pos()
+    # pointFrom = field.allies[idFrom].get_pos()
+    pointFrom = field.ball.get_pos()
     enemys = field.active_enemies()
     pointToPass = None
 
@@ -91,6 +92,7 @@ def GK(field: fld.Field, actions: list[Action]):# do consider ball
         mostLikelyPointForScore = aux.closest_point_on_line(field.ally_goal.up, field.ally_goal.down, ballPos)
         pointForGK = aux.segment_poly_intersect(ballPos, mostLikelyPointForScore, field.ally_goal.hull)
         field.strategy_image.draw_circle(pointForGK, color=(0, 0, 255), size_in_mms=50)
+        # print(pointForGK)
         actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
         field.allies[const.GK].set_dribbler_speed(1)
         # else:

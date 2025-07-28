@@ -301,16 +301,16 @@ class Strategy:
             # actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (field.ball.get_pos()-field.allies[const.GK].get_pos()).arg())
             # field.allies[const.GK].set_dribbler_speed(1)
 
-            rPos = field.allies[1].get_pos()
-            nearestScorePoint = None
-            firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
-            secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
-            if aux.dist(rPos, firstScorePoint) < aux.dist(rPos, secondScorePoint):
-                field.strategy_image.draw_line(rPos, firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
-            else:
-                field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+            # rPos = field.allies[1].get_pos()
+            # nearestScorePoint = None
+            # firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
+            # secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
+            # if aux.dist(rPos, firstScorePoint) < aux.dist(rPos, secondScorePoint):
+            #     field.strategy_image.draw_line(rPos, firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+            # else:
+            #     field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
 
-            # GK(field, actions)
+            GK(field, actions)
 
     def doPass(self, field, actions, idxThisR):
         if field.is_ball_in(field.allies[self.idDoPass]):
