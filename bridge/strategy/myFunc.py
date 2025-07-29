@@ -9,16 +9,18 @@ from bridge.router.base_actions import Action, Actions, KickActions  # type: ign
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     field.allies[idRWhichOpen].set_dribbler_speed(0)
     ballPos = field.ball.get_pos()
-    enemysR = field.enemies
+    # enemysR = field.enemies
+    enemysR = field.active_enemies(True)
     rPos = field.allies[idRWhichOpen].get_pos()
     rWhichPreventPass = None
     pointToGo = None
     vectFromRToBall = ballPos - rPos
-    # for enemyR in enemysR: # NORM CODE
-    #     if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
-    #         rWhichPreventPass = enemyR
-    if len(aux.line_circle_intersect(ballPos, rPos, enemysR[3].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
-        rWhichPreventPass = enemysR[3]
+    for enemyR in enemysR: # NORM CODE
+        if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
+            rWhichPreventPass = enemyR
+            field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), 50)
+    # if len(aux.line_circle_intersect(ballPos, rPos, enemysR[3].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
+    #     rWhichPreventPass = enemysR[3]
     if rWhichPreventPass != None:
         # if aux.get_angle_between_points(rWhichPreventPass.get_pos(), ballPos, rPos) > 0:
         vectL = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
@@ -45,12 +47,12 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
             # if pointToGo.x*field.polarity > 0:
             #     pointToGo = aux.rotate(vect, math.pi)*700 + rPos
         field.strategy_image.draw_line(pointToGo, rPos, (255, 255, 255), 20)
-        # actions[idRWhichOpen] = Actions.GoToPoint(pointToGo, (ballPos-pointToGo).arg())
+        actions[idRWhichOpen] = Actions.GoToPoint(pointToGo, (ballPos-pointToGo).arg())
         # field.allies[idRWhichOpen].set_dribbler_speed(1)
     else:
         field.strategy_image.draw_circle(rPos, (0, 0, 0), 50)
         # actions[idRWhichOpen] = Actions.GoToPoint(rPos, (ballPos-rPos).arg())
-        # actions[idRWhichOpen] = Actions.BallGrab((ballPos-rPos).arg())
+        actions[idRWhichOpen] = Actions.BallGrab((ballPos-rPos).arg())
 
 def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.GK):
     rToPass = None
@@ -116,7 +118,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
         return None
     # else: # consider this case
 
-def GK(field: fld.Field, actions: list[Action], oldGKState):# do consider ball
+def GK(field: fld.Field, actions: list[Action], oldGKState):
     GKState = None
 
     field.allies[const.GK].set_dribbler_speed(0)
@@ -146,7 +148,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):# do consider ball
                 # field.strategy_image.send_telemetry("GK State", "Intersept")
                 GKState = "Intersept"
                 """ intersept ball"""
-                actions[const.GK] = Actions.GoToPointIgnore(interseptBallPoint, (ballPos-interseptBallPoint).arg())
+                actions[const.GK] = Actions.GoToPointIgnore(interseptBallPoint, (ballPos-interseptBallPoint).arg())# TODO change koef
             else:
                 GKState = "Grab ball"
                 # field.strategy_image.send_telemetry("GK State", "Grab ball")

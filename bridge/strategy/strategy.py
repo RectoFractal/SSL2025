@@ -268,7 +268,7 @@ class Strategy:
         if field.ally_color == const.Color.BLUE:
             """code for blue"""
             # self.GKLastState = GK(field, actions, self.GKLastState)
-            # openForPass(field, 7, actions)
+            openForPass(field, 2, actions)
             # self.attacker(field, actions, 0, 2)
             # if not field.is_ball_in(field.allies[0]):
             #     actions[0] = Actions.BallGrab((field.ball.get_pos() - field.allies[0].get_pos()).arg())
@@ -320,7 +320,7 @@ class Strategy:
 
             # openForPass(field, 7, actions)
             # self.GKLastState = GK(field, actions, self.GKLastState)
-            actions[const.GK] =  Actions.Kick(aux.Point(0, 0), is_pass=True)
+            # actions[const.GK] =  Actions.Kick(aux.Point(0, 0), is_pass=True)
             # self.attacker(field, actions, 0, 2)
             # self.attacker(field, actions, 2, 0)
 
