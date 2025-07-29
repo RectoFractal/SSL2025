@@ -311,10 +311,11 @@ class Strategy:
             # # actions[0] = Actions.Kick(field.enemy_goal.center)
         else:
             """code for yellow"""
-            # field.strategy_image.draw_circle(field.ally_goal.center, (255, 255, 255), 1000)
+            findNearestScorePoint(field, actions, 0, 2)
+            
 
-            self.GKLastState = GK(field, actions, self.GKLastState) # for change koef
-            # now = time()%8//4
+            # self.GKLastState = GK(field, actions, self.GKLastState) 
+            # now = time()%8//4 # for change koef
             # match now:
             #     case 0:
             #         # pointF = field.ally_goal.center_down
@@ -447,11 +448,10 @@ class Strategy:
                     else:
                         """do do pass and wait for result"""
                         actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
-            else:
+            else: # TODO Fast!!!
                 actions[idxThisR] = Actions.GoToPoint(field.allies[idxThisR].get_pos(), 0)  
                 # field.strategy_image.send_telemetry("status", "if nearest R our open for pass")
-                status = "if nearest R our open for pass"
+                status = "if nearest R enenmy intersept maybe pass or try take ball, depend from dist"
                 # DONT DONE
-                """if nearest R our open for pass"""
                 """if nearest R enenmy intersept maybe pass or try take ball, depend from dist"""
         field.strategy_image.send_telemetry("statusAttacker"+str(idxThisR), status)
