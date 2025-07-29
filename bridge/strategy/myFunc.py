@@ -6,6 +6,8 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
+# def findNearestScorePoint() TODO
+
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     field.allies[idRWhichOpen].set_dribbler_speed(0)
     ballPos = field.ball.get_pos()
@@ -86,7 +88,7 @@ def getPointToPassAndRToPass(field, actions, maybePassPoints, enemys, pointFrom,
         else:
             rToPass = nearestR
             pointToPass = maybePassPoint
-        if rToPass == None: # TODO
+        if rToPass == None:
             openForPass(field, nearestR.r_id, actions)
 
     else:
@@ -100,7 +102,7 @@ def getPointToPassAndRToPass(field, actions, maybePassPoints, enemys, pointFrom,
                 rToPass = nearestR
                 pointToPass = maybePassPoint
                 break
-        if rToPass == None: # TODO
+        if rToPass == None:
             openForPass(field, maybePassPoints[0].r_id, actions)
     return [rToPass, pointToPass]
 
@@ -127,10 +129,6 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
         # field.strategy_image.draw_line(pointFrom, pointToPass, color=(255, 0, 0))
         # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
         actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
-        if not field.is_ball_in(field.allies[rToPass.r_id]):# TODO
-            """getting a pass"""
-            # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
-            # actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
     else:
         field.strategy_image.send_telemetry("status pass", "dont have point")
     if rToPass != None:
@@ -190,7 +188,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
         """knock out the ball from hull"""
         doPassNearAllly(field, actions)
     else:
-        GKState = "block maybe kick" # TODO change point for block
+        GKState = "block maybe kick"
         # field.strategy_image.send_telemetry("GK State", "Block maybe kick")
         # if enemyRGrabBall:
         """block maybe kick"""
