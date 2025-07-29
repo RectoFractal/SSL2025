@@ -267,8 +267,13 @@ class Strategy:
 
         if field.ally_color == const.Color.BLUE:
             """code for blue"""
+
+            self.attacker(field, actions, 0, 2)
+            self.attacker(field, actions, 2, 0)
+            # findPointForScore(field, field.allies[2].get_pos())
+            
             # self.GKLastState = GK(field, actions, self.GKLastState)
-            openForPass(field, 2, actions)
+            # openForPass(field, 2, actions)
             # self.attacker(field, actions, 0, 2)
             # if not field.is_ball_in(field.allies[0]):
             #     actions[0] = Actions.BallGrab((field.ball.get_pos() - field.allies[0].get_pos()).arg())
@@ -343,7 +348,7 @@ class Strategy:
         else:
             """get pass"""
             # field.strategy_image.send_telemetry("status pass", "get pass")
-            actions[idxThisR] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))
+            actions[idxThisR] = Actions.Kick(findPointForScore(field))
             # self.idDoPass = self.idGettingPass
             self.idGettingPass = None
 
@@ -368,7 +373,7 @@ class Strategy:
                 if field.is_ball_in(thisR):
                     # field.strategy_image.draw_circle(thisR.get_pos(), (255, 255, 255), 50)
                     """if this robot have ball"""
-                    pointForScore = findPointForScore(field, thisR.get_pos())
+                    pointForScore = findPointForScore(field)
                     if pointForScore != None:
                         """try do score if r can"""
                         # field.strategy_image.send_telemetry("status", "try do score if r can")
@@ -419,4 +424,4 @@ class Strategy:
                 # DONT DONE
                 """if nearest R our open for pass"""
                 """if nearest R enenmy intersept maybe pass or try take ball, depend from dist"""
-        field.strategy_image.send_telemetry("statusAttacker", status)
+        field.strategy_image.send_telemetry("statusAttacker"+str(idxThisR), status)

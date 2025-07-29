@@ -32,20 +32,38 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         pointToGoR = vectR*700 + rPos
         if pointToGoR.x*field.polarity > 0:
             pointToGoR = aux.rotate(vectR, math.pi)*700 + rPos
+
+        futurePointL = vectL*700*2 + rPos
+        futurePointR = vectR*700*2 + rPos
+        field.strategy_image.draw_circle(futurePointL, (255, 0, 0))
+        field.strategy_image.draw_circle(futurePointR, (0, 255, 0))
+        weAreOpenInFutureL = all((len(aux.line_circle_intersect(futurePointL, rPos, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) != 0) for enemyR in enemysR)
+        weAreOpenInFutureR = all((len(aux.line_circle_intersect(futurePointR, rPos, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) != 0) for enemyR in enemysR)
+        # print(weAreOpenInFutureL)
         if aux.dist(pointToGoL, field.enemy_goal.center) < aux.dist(pointToGoR, field.enemy_goal.center):
             """open to left"""
-            pointToGo = pointToGoL
-            # vect = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
-            # pointToGo = vect*700 + rPos
-            # if pointToGo.x*field.polarity > 0:
-            #     pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+            if not weAreOpenInFutureL and not weAreOpenInFutureR:
+                if aux.is_point_inside_poly(futurePointL, field.hull):
+                    pointToGo = pointToGoL
+                else:
+                    pointToGo = pointToGoR
+            else:
+                if not weAreOpenInFutureL:
+                    pointToGo = pointToGoL
+                else:
+                    pointToGo = pointToGoR
         else:
             """open to right"""
-            pointToGo = pointToGoR
-            # vect = aux.rotate(vectFromRToBall.unity(), math.pi/2)
-            # pointToGo = vect*700 + rPos
-            # if pointToGo.x*field.polarity > 0:
-            #     pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+            if not weAreOpenInFutureL and not weAreOpenInFutureR:
+                if aux.is_point_inside_poly(futurePointR, field.hull):
+                    pointToGo = pointToGoR
+                else:
+                    pointToGo = pointToGoL
+            else:
+                if not weAreOpenInFutureR:
+                    pointToGo = pointToGoR
+                else:
+                    pointToGo = pointToGoL
         field.strategy_image.draw_line(pointToGo, rPos, (255, 255, 255), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(pointToGo, (ballPos-pointToGo).arg())
         # field.allies[idRWhichOpen].set_dribbler_speed(1)
@@ -54,7 +72,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         # actions[idRWhichOpen] = Actions.GoToPoint(rPos, (ballPos-rPos).arg())
         actions[idRWhichOpen] = Actions.BallGrab((ballPos-rPos).arg())
 
-def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.GK):
+def getPointToPassAndRToPass(field, actions, maybePassPoints, enemys, pointFrom, idFrom = const.GK):
     rToPass = None
     pointToPass = None
     if idFrom != const.GK:
@@ -68,7 +86,8 @@ def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.
         else:
             rToPass = nearestR
             pointToPass = maybePassPoint
-        # if rToPass == None:
+        if rToPass == None: # TODO
+            openForPass(field, nearestR.r_id, actions)
 
     else:
         for nearestR in maybePassPoints:
@@ -81,6 +100,8 @@ def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.
                 rToPass = nearestR
                 pointToPass = maybePassPoint
                 break
+        if rToPass == None: # TODO
+            openForPass(field, maybePassPoints[0].r_id, actions)
     return [rToPass, pointToPass]
 
 def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
@@ -98,7 +119,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     else:
         maybePassPoints = fld.find_nearest_robot(pointFrom, points, avoid=exclude)
     
-    rToPass, pointToPass = getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom)
+    rToPass, pointToPass = getPointToPassAndRToPass(field, actions, maybePassPoints, enemys, pointFrom, idFrom)
 
     if pointToPass != None:
         """if enemy r dont prevent pass """
@@ -169,7 +190,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
         """knock out the ball from hull"""
         doPassNearAllly(field, actions)
     else:
-        GKState = "block maybe kick"
+        GKState = "block maybe kick" # TODO change point for block
         # field.strategy_image.send_telemetry("GK State", "Block maybe kick")
         # if enemyRGrabBall:
         """block maybe kick"""
@@ -184,7 +205,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
+def findPointForScore(field: fld.Field, pointFrom = None):#WORK!!!
     """
     Find the nearest point to a given point (center) from a list, optionally excluding some points.
 
@@ -196,7 +217,10 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
     Returns:
         Point: The closest point to `center` that is not in `exclude`.
     """
-    qPoint = 10
+    if pointFrom == None:
+        pointFrom = field.ball.get_pos()
+    qPoint = 8
+    qPoint +=2
     d = field.enemy_goal.up.y - field.enemy_goal.down.y
     points = [aux.Point(field.enemy_goal.up.x, field.enemy_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
     enemys = field.active_enemies(True)
@@ -210,6 +234,6 @@ def findPointForScore(field: fld.Field, pointFrom):#WORK!!!
                 closest = point
     if closest != None:
         field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
-    # else:
-    #     field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
+    else:
+        field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
     return closest
