@@ -6,6 +6,52 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
+def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
+    field.allies[idRWhichOpen].set_dribbler_speed(0)
+    ballPos = field.ball.get_pos()
+    enemysR = field.enemies
+    rPos = field.allies[idRWhichOpen].get_pos()
+    rWhichPreventPass = None
+    pointToGo = None
+    vectFromRToBall = ballPos - rPos
+    # for enemyR in enemysR: # NORM CODE
+    #     if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
+    #         rWhichPreventPass = enemyR
+    if len(aux.line_circle_intersect(ballPos, rPos, enemysR[3].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
+        rWhichPreventPass = enemysR[3]
+    if rWhichPreventPass != None:
+        # if aux.get_angle_between_points(rWhichPreventPass.get_pos(), ballPos, rPos) > 0:
+        vectL = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
+        pointToGoL = vectL*700 + rPos
+        if pointToGoL.x*field.polarity > 0:
+            pointToGoL = aux.rotate(vectL, math.pi)*700 + rPos
+
+        vectR = aux.rotate(vectFromRToBall.unity(), math.pi/2)
+        pointToGoR = vectR*700 + rPos
+        if pointToGoR.x*field.polarity > 0:
+            pointToGoR = aux.rotate(vectR, math.pi)*700 + rPos
+        if aux.dist(pointToGoL, field.enemy_goal.center) < aux.dist(pointToGoR, field.enemy_goal.center):
+            """open to left"""
+            pointToGo = pointToGoL
+            # vect = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
+            # pointToGo = vect*700 + rPos
+            # if pointToGo.x*field.polarity > 0:
+            #     pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+        else:
+            """open to right"""
+            pointToGo = pointToGoR
+            # vect = aux.rotate(vectFromRToBall.unity(), math.pi/2)
+            # pointToGo = vect*700 + rPos
+            # if pointToGo.x*field.polarity > 0:
+            #     pointToGo = aux.rotate(vect, math.pi)*700 + rPos
+        field.strategy_image.draw_line(pointToGo, rPos, (255, 255, 255), 20)
+        # actions[idRWhichOpen] = Actions.GoToPoint(pointToGo, (ballPos-pointToGo).arg())
+        # field.allies[idRWhichOpen].set_dribbler_speed(1)
+    else:
+        field.strategy_image.draw_circle(rPos, (0, 0, 0), 50)
+        # actions[idRWhichOpen] = Actions.GoToPoint(rPos, (ballPos-rPos).arg())
+        # actions[idRWhichOpen] = Actions.BallGrab((ballPos-rPos).arg())
+
 def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.GK):
     rToPass = None
     pointToPass = None
@@ -20,6 +66,8 @@ def getPointToPassAndRToPass(maybePassPoints, enemys, pointFrom, idFrom = const.
         else:
             rToPass = nearestR
             pointToPass = maybePassPoint
+        # if rToPass == None:
+
     else:
         for nearestR in maybePassPoints:
             maybePassPoint = nearestR.get_pos()
@@ -56,7 +104,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
         # field.strategy_image.draw_line(pointFrom, pointToPass, color=(255, 0, 0))
         # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
         actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
-        if not field.is_ball_in(field.allies[rToPass.r_id]):
+        if not field.is_ball_in(field.allies[rToPass.r_id]):# TODO
             """getting a pass"""
             # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
             # actions[rToPass.r_id] = Actions.BallGrab(field.allies[idFrom]-field.allies[idFrom].get_pos().arg())
