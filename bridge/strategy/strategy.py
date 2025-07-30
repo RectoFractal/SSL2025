@@ -264,92 +264,98 @@ class Strategy:
 
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
+        
+        if len(field.allies) != 0 and field.allies is not None:
+            if field.ally_color == const.Color.BLUE:
+                """code for blue"""
+                # goToNearestScorePoint(field, actions, 0, 2)
+                self.attacker(field, actions, 0, 2)
+                # if field.is_ball_in(field.allies[1]):
+                #     actions[1] = Actions.GoToPoint(field.enemy_goal.center, (field.enemy_goal.center-field.allies[1].get_pos()).arg(), ignore_ball=True)
+                #     field.allies[1].set_dribbler_speed(1)
+                # else:
+                #     actions[1] = Actions.BallGrab((field.enemy_goal.center-field.allies[1].get_pos()).arg())
+                self.attacker(field, actions, 2, 0)
+                
+                # p = findPointForScore(field) # for change koef
+                # if p != None:
+                #     actions[2] = Actions.Kick(p)
+                # self.GKLastState = GK(field, actions, self.GKLastState) # for change koef
+                # openForPass(field, 2, actions)
+                # self.attacker(field, actions, 0, 2)
+                # if not field.is_ball_in(field.allies[0]):
+                #     actions[0] = Actions.BallGrab((field.ball.get_pos() - field.allies[0].get_pos()).arg())
+                # else:
+                #     field.strategy_image.draw_circle(field.allies[0].get_pos(), (255, 255, 255), 50)
+                # self.attacker(field, actions, 1, 0)
+                # """do pass"""
+                # if self.idGettingPass != None:
+                #     if not field.is_ball_in(field.allies[self.idGettingPass]):
+                #         field.strategy_image.send_telemetry("status pass", "getting pass")
+                #         actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
+                #     else:
+                #         field.strategy_image.send_telemetry("status pass", "get pass")
+                #         self.idDoPass = self.idGettingPass
+                #         self.idGettingPass = None
+                # # actions[0] = Actions.GoToPoint(aux.Point(0, 0), 0)
+                # # findPointForScore(field, field.ball.get_pos())
+                # # attacker(field, actions, 0, 1)
+                
+                # if field.is_ball_in(field.allies[self.idDoPass]):
+                #     """do pass"""
+                #     # field.strategy_image.send_telemetry("status", "pass")
+                #     self.idGettingPass = doPassNearAllly(field, actions, self.idDoPass)
+                # elif self.idGettingPass == None:
+                #     """grab ball"""
+                #     # field.strategy_image.send_telemetry("status", "grab")
+                #     actions[self.idDoPass] = Actions.BallGrab((field.ball.get_pos() - field.allies[self.idDoPass].get_pos()).arg())  
+                # else:
+                #     """pass done"""
+                #     # actions[self.idDoPass] = Actions.GoToPoint(aux.Point(0, 0), 0)  
+                # # actions[0] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
+                # # print(actions[0])
+                # # actions[0] = Actions.Kick(field.enemy_goal.center)
+            else:
+                """code for yellow"""
+                # findNearestScorePoint(field, actions, 0, 2)
+                
 
-        if field.ally_color == const.Color.BLUE:
-            """code for blue"""
-            # goToNearestScorePoint(field, actions, 0, 2)
-            self.attacker(field, actions, 0, 2)
-            # self.attacker(field, actions, 2, 0)
-            
-            # p = findPointForScore(field) # for change koef
-            # if p != None:
-            #     actions[2] = Actions.Kick(p)
-            # self.GKLastState = GK(field, actions, self.GKLastState) # for change koef
-            # openForPass(field, 2, actions)
-            # self.attacker(field, actions, 0, 2)
-            # if not field.is_ball_in(field.allies[0]):
-            #     actions[0] = Actions.BallGrab((field.ball.get_pos() - field.allies[0].get_pos()).arg())
-            # else:
-            #     field.strategy_image.draw_circle(field.allies[0].get_pos(), (255, 255, 255), 50)
-            # self.attacker(field, actions, 1, 0)
-            # """do pass"""
-            # if self.idGettingPass != None:
-            #     if not field.is_ball_in(field.allies[self.idGettingPass]):
-            #         field.strategy_image.send_telemetry("status pass", "getting pass")
-            #         actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
-            #     else:
-            #         field.strategy_image.send_telemetry("status pass", "get pass")
-            #         self.idDoPass = self.idGettingPass
-            #         self.idGettingPass = None
-            # # actions[0] = Actions.GoToPoint(aux.Point(0, 0), 0)
-            # # findPointForScore(field, field.ball.get_pos())
-            # # attacker(field, actions, 0, 1)
-            
-            # if field.is_ball_in(field.allies[self.idDoPass]):
-            #     """do pass"""
-            #     # field.strategy_image.send_telemetry("status", "pass")
-            #     self.idGettingPass = doPassNearAllly(field, actions, self.idDoPass)
-            # elif self.idGettingPass == None:
-            #     """grab ball"""
-            #     # field.strategy_image.send_telemetry("status", "grab")
-            #     actions[self.idDoPass] = Actions.BallGrab((field.ball.get_pos() - field.allies[self.idDoPass].get_pos()).arg())  
-            # else:
-            #     """pass done"""
-            #     # actions[self.idDoPass] = Actions.GoToPoint(aux.Point(0, 0), 0)  
-            # # actions[0] = Actions.BallGrab((field.enemy_goal.center - field.ball.get_pos()).arg())  
-            # # print(actions[0])
-            # # actions[0] = Actions.Kick(field.enemy_goal.center)
-        else:
-            """code for yellow"""
-            # findNearestScorePoint(field, actions, 0, 2)
-            
+                # self.GKLastState = GK(field, actions, self.GKLastState) 
+                # now = time()%8//4 # for change koef
+                # match now:
+                #     case 0:
+                #         # pointF = field.ally_goal.center_down
+                #         pointF = aux.Point(0, 200)
+                #         field.strategy_image.draw_circle(aux.Point(0, 200), (200, 0, 0), 50)
+                #         # print("1")
+                #     case 1:
+                #         # pointF = field.ally_goal.frw_down
+                #         pointF = aux.Point(0, 0)
+                #         field.strategy_image.draw_circle(aux.Point(0, 0), (200, 0, 0), 50)
+                #         # print(2)
+                # actions[const.GK] = Actions.GoToPointIgnore(aux.Point(pointF.x+100, pointF.y), 0)
 
-            # self.GKLastState = GK(field, actions, self.GKLastState) 
-            # now = time()%8//4 # for change koef
-            # match now:
-            #     case 0:
-            #         # pointF = field.ally_goal.center_down
-            #         pointF = aux.Point(0, 200)
-            #         field.strategy_image.draw_circle(aux.Point(0, 200), (200, 0, 0), 50)
-            #         # print("1")
-            #     case 1:
-            #         # pointF = field.ally_goal.frw_down
-            #         pointF = aux.Point(0, 0)
-            #         field.strategy_image.draw_circle(aux.Point(0, 0), (200, 0, 0), 50)
-            #         # print(2)
-            # actions[const.GK] = Actions.GoToPointIgnore(aux.Point(pointF.x+100, pointF.y), 0)
+                # actions[const.GK] = Actions.GoToPoint(aux.Point(0, 0), 0)/
+                
+                # pointForGK = aux.nearest_point_on_poly(field.ball.get_pos(), field.ally_goal.hull)
+                # field.strategy_image.draw_line(pointForGK, field.ball.get_pos(), color=(200, 0, 200), size_in_pixels=20)
+                # actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (field.ball.get_pos()-field.allies[const.GK].get_pos()).arg())
+                # field.allies[const.GK].set_dribbler_speed(1)
 
-            # actions[const.GK] = Actions.GoToPoint(aux.Point(0, 0), 0)/
-            
-            # pointForGK = aux.nearest_point_on_poly(field.ball.get_pos(), field.ally_goal.hull)
-            # field.strategy_image.draw_line(pointForGK, field.ball.get_pos(), color=(200, 0, 200), size_in_pixels=20)
-            # actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (field.ball.get_pos()-field.allies[const.GK].get_pos()).arg())
-            # field.allies[const.GK].set_dribbler_speed(1)
+                # rPos = field.allies[1].get_pos()
+                # nearestScorePoint = None
+                # firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
+                # secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
+                # if aux.dist(rPos, firstScorePoint) < aux.dist(rPos, secondScorePoint):
+                #     field.strategy_image.draw_line(rPos, firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
+                # else:
+                #     field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
 
-            # rPos = field.allies[1].get_pos()
-            # nearestScorePoint = None
-            # firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
-            # secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
-            # if aux.dist(rPos, firstScorePoint) < aux.dist(rPos, secondScorePoint):
-            #     field.strategy_image.draw_line(rPos, firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
-            # else:
-            #     field.strategy_image.draw_line(rPos, secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
-
-            # openForPass(field, 7, actions)
-            # self.GKLastState = GK(field, actions, self.GKLastState)
-            # actions[const.GK] =  Actions.Kick(aux.Point(0, 0), is_pass=True)
-            # self.attacker(field, actions, 0, 2)
-            # self.attacker(field, actions, 2, 0)
+                # openForPass(field, 7, actions)
+                # self.GKLastState = GK(field, actions, self.GKLastState)
+                # actions[const.GK] =  Actions.Kick(aux.Point(0, 0), is_pass=True)
+                # self.attacker(field, actions, 0, 2)
+                # self.attacker(field, actions, 2, 0)
 
     def doPass(self, field, actions, idxThisR):
         if field.is_ball_in(field.allies[self.idDoPass]):
@@ -378,6 +384,8 @@ class Strategy:
         status = None
         enemys = field.active_enemies(True)
         allies = field.allies
+        alliesWithoutGK = allies.copy()
+        alliesWithoutGK.remove(field.allies[const.GK])
         thisR: rbt.Robot = allies[idxThisR]
         otherAttackerR = allies[idxOtherAttacker]
         if self.idDoPass == idxThisR:
@@ -403,29 +411,43 @@ class Strategy:
                         actions[idxThisR] = Actions.Kick(pointForScore)
                     else:
                         """if this r cant do score"""
-                        nearestEnemyRToThisAttacker = fld.find_nearest_robot(thisR.get_pos(), enemys)
-                        nearestEnemyRToOtherAttacker = fld.find_nearest_robot(otherAttackerR.get_pos(), enemys)
+                        # nearestEnemyRToThisAttacker = fld.find_nearest_robot(thisR.get_pos(), enemys)
+                        # nearestEnemyRToOtherAttacker = fld.find_nearest_robot(otherAttackerR.get_pos(), enemys)
 
-                        pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
+                        # pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
 
-                        if pointForScoreForOtherAttacker != None:
-                            """if other attacker can do score, pass other attacker"""
-                            status = "if other attacker can do score, pass other attacker"
-                            self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
-                        else:
-                            """if both attackers cant do score try do score: change position"""
-                            status = "if both attackers cant do score try do score: change position"
-                            goToNearestScorePoint(field, actions, 0, None)
-
+                        self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
+                        # if pointForScoreForOtherAttacker != None:
+                        #     """if other attacker can do score, pass other attacker"""
+                        #     status = "if other attacker can do score, pass other attacker"
+                        #     self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
+                        # else:
+                        #     """if both attackers cant do score try do score: change position"""
+                        #     status = "if both attackers cant do score try do score: change position"
+                        #     goToNearestScorePoint(field, actions, 0, None)
                 else:
                     if self.idGettingPass == None:
                         """if this r is nearest to ball, but dont grab him, grab ball"""
                         # field.strategy_image.send_telemetry("status", "if this r is nearest to ball, but dont grab him, grab ball")
                         status = "if this r is nearest to ball, but dont grab him, grab ball"
-                        actions[idxThisR] = Actions.BallGrab((field.ball.get_pos() - thisR.get_pos()).arg())
+                        # actions[idxThisR] = Actions.BallGrab((field.ball.get_pos() - thisR.get_pos()).arg())
+                        actions[idxThisR] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#TEST
                     else:
                         """do do pass and wait for result"""
                         actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
+            elif nearestRToBall == allies[idxOtherAttacker]:
+                    """if other attacker have ball"""
+                    goToNearestScorePoint(field, actions, idxThisR, idxOtherAttacker)
+            elif nearestRToBall == allies[const.GK]:
+                """if GK have ball"""
+                print(alliesWithoutGK, field.allies)
+                nearestRToGK = aux.find_nearest_point(field.ball.get_pos(), alliesWithoutGK)
+                if nearestRToGK == allies[idxThisR]:
+                    """if this R nearest to GK"""
+                    openForPass(field, idxThisR, actions)
+                else:
+                    """if not this r nearest to GK"""
+                    actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0))
             else: # TODO Fast!!! """if on our part of field block maybe score with dribbler else grab ball"""
                 actions[idxThisR] = Actions.GoToPoint(field.allies[idxThisR].get_pos(), 0)  
                 # field.strategy_image.send_telemetry("status", "if nearest R our open for pass")
