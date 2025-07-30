@@ -432,5 +432,7 @@ class LiteField:
         self.ball: entity.Entity = field.ball
         self.ball_start_point: aux.Point = field.ball_start_point
 
-        self.blue_team = [rbt.LiteRobot(robot) for robot in field.b_team if robot.is_used()]
-        self.yellow_team = [rbt.LiteRobot(robot) for robot in field.y_team if robot.is_used()]
+        self.blue_team = [rbt.LiteRobot(robot) for robot in field.b_team if (robot.is_used() and robot.r_id != field.gk_id)]
+        self.yellow_team = [
+            rbt.LiteRobot(robot) for robot in field.y_team if (robot.is_used() and robot.r_id != field.enemy_gk_id)
+        ]
