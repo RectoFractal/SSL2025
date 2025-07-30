@@ -11,11 +11,35 @@ def findNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, 
     otherAttacker = field.allies[idOtherAttacker]
     enemysGoalCenter = field.enemy_goal.center
     # field.strategy_image.draw_circle(enemysGoalCenter, (255, 255, 255), 1000)
-    if aux.is_point_inside_circle(thisR.get_pos(), enemysGoalCenter, 1025):
-        pass
+    if aux.is_point_inside_circle(thisR.get_pos(), enemysGoalCenter, 1050):
+        # vectFromCenterToR = (thisR.get_pos()-enemysGoalCenter)
+        vectFromCenterToR = aux.rotate(field.enemy_goal.eye_forw, (thisR.get_pos()-enemysGoalCenter).arg())*1000
+        # field.strategy_image.draw_line(vectFromCenterToR, enemysGoalCenter)
+        for angel in range(-180, 180+1, 4):#TODO for start look at small angels
+            angelInRad = angel/180*math.pi
+            maybeScorePoint = aux.rotate(vectFromCenterToR, angelInRad)+enemysGoalCenter#TODO check logic rotate
+            argVectFromCenterToMaybeScorePoint = aux.wind_down_angle((maybeScorePoint-enemysGoalCenter).arg())
+            if field.polarity == 1:
+                # field.strategy_image.draw_circle(thisR.get_pos(), size_in_mms=500)
+                
+                # print(aux.wind_down_angle(maybeScorePoint.arg()))
+                if -math.pi/2 > argVectFromCenterToMaybeScorePoint or argVectFromCenterToMaybeScorePoint > math.pi/2:
+                    continue
+                field.strategy_image.draw_circle(maybeScorePoint)
+            else:
+                if -math.pi/2 < argVectFromCenterToMaybeScorePoint < math.pi/2:
+                    continue
+                field.strategy_image.draw_circle(maybeScorePoint)
+            pointForScore = findPointForScore(field, maybeScorePoint)
+            # field.strategy_image.draw_line(maybeScorePoint, enemysGoalCenter, (200, 0, 0), 100)
+            # field.strategy_image.draw_line(pointForScore, enemysGoalCenter)
+            # if pointForScore != None:
+            #     # field.strategy_image.draw_line(maybeScorePoint, enemysGoalCenter, (200, 0, 0), 100)
+            #     # actions[idFrom] = Actions.GoToPoint(pointForScore, (otherAttacker.get_pos()-thisR.get_pos()).arg())
+            #     break
     else:
         nearestPoint = aux.nearest_point_on_circle(thisR.get_pos(), enemysGoalCenter, 1000)
-        actions[idFrom] = Actions.GoToPoint(nearestPoint, (otherAttacker.get_pos()-thisR.get_pos()).arg())
+        # actions[idFrom] = Actions.GoToPoint(nearestPoint, (otherAttacker.get_pos()-thisR.get_pos()).arg())
 
 
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):

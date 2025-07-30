@@ -267,7 +267,7 @@ class Strategy:
 
         if field.ally_color == const.Color.BLUE:
             """code for blue"""
-
+            findNearestScorePoint(field, actions, 0, 2)
             # self.attacker(field, actions, 0, 2)
             # self.attacker(field, actions, 2, 0)
             
@@ -311,7 +311,7 @@ class Strategy:
             # # actions[0] = Actions.Kick(field.enemy_goal.center)
         else:
             """code for yellow"""
-            findNearestScorePoint(field, actions, 0, 2)
+            # findNearestScorePoint(field, actions, 0, 2)
             
 
             # self.GKLastState = GK(field, actions, self.GKLastState) 
@@ -448,7 +448,7 @@ class Strategy:
                     else:
                         """do do pass and wait for result"""
                         actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
-            else: # TODO Fast!!!
+            else: # TODO Fast!!! """if on our part of field block maybe score with dribbler else grab ball"""
                 actions[idxThisR] = Actions.GoToPoint(field.allies[idxThisR].get_pos(), 0)  
                 # field.strategy_image.send_telemetry("status", "if nearest R our open for pass")
                 status = "if nearest R enenmy intersept maybe pass or try take ball, depend from dist"
