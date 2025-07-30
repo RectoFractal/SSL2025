@@ -267,8 +267,8 @@ class Strategy:
 
         if field.ally_color == const.Color.BLUE:
             """code for blue"""
-            findNearestScorePoint(field, actions, 0, 2)
-            # self.attacker(field, actions, 0, 2)
+            # goToNearestScorePoint(field, actions, 0, 2)
+            self.attacker(field, actions, 0, 2)
             # self.attacker(field, actions, 2, 0)
             
             # p = findPointForScore(field) # for change koef
@@ -409,36 +409,14 @@ class Strategy:
                         pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
 
                         if pointForScoreForOtherAttacker != None:
-                            """if other attacker can do score"""
+                            """if other attacker can do score, pass other attacker"""
+                            status = "if other attacker can do score, pass other attacker"
                             self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
-                            # if self.idGettingPass != None and self.idGettingPass == None:
-                            #     """if we dont have already done pass"""
-                            #     self.idDoPass = idxThisR
-                            #     self.idGettingPass = self.idGettingPass
-                            #     ||
-                        # REWRITE \/ : open for score TODO 
-                        elif aux.dist(thisR.get_pos(), nearestEnemyRToThisAttacker.get_pos()) > aux.dist(otherAttackerR.get_pos(), nearestEnemyRToOtherAttacker.get_pos()):
-                            """if enemys r from this r on longer dist to other attacker"""
-                            
-                            nearestScorePoint = None
-                            firstScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, const.FIELD_DY/2)
-                            secondScorePoint = aux.Point(const.FIELD_DX/2*-field.polarity, -const.FIELD_DY/2)
-                            if aux.dist(thisR.get_pos(), firstScorePoint) < aux.dist(thisR.get_pos(), secondScorePoint):
-                                field.strategy_image.draw_line(thisR.get_pos(), firstScorePoint, color = (0, 0, 0), size_in_pixels = 20)
-                                nearestScorePoint = firstScorePoint
-                            else:
-                                field.strategy_image.draw_line(thisR.get_pos(), secondScorePoint, color = (0, 0, 0), size_in_pixels = 20)
-                                nearestScorePoint = secondScorePoint
-                            actions[idxThisR] = Actions.GoToPoint(nearestScorePoint, (field.enemy_goal.center - thisR.get_pos()).arg())
-                            # nearestScorePoint = 
-                            # field.strategy_image.send_telemetry("status", "do pass or come closer to enemy goal")
-                            status = "do pass or come closer to enemy goal"
                         else:
-                            print(aux.dist(thisR.get_pos(), nearestEnemyRToThisAttacker.get_pos()), "This")
-                            print(aux.dist(otherAttackerR.get_pos(), nearestEnemyRToOtherAttacker.get_pos()))
-                            status = "passsssss"
-                        """do pass or come closer to enemy goal"""
-                        # DONT DONE TODO
+                            """if both attackers cant do score try do score: change position"""
+                            status = "if both attackers cant do score try do score: change position"
+                            goToNearestScorePoint(field, actions, 0, None)
+
                 else:
                     if self.idGettingPass == None:
                         """if this r is nearest to ball, but dont grab him, grab ball"""

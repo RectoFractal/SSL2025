@@ -6,40 +6,46 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
-def findNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, idOtherAttacker: int): #TODO
+def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, idOtherAttacker: int | None):
     thisR = field.allies[idFrom]
-    otherAttacker = field.allies[idOtherAttacker]
     enemysGoalCenter = field.enemy_goal.center
+    if idOtherAttacker != None:
+        aimForLookPos = field.allies[idOtherAttacker].get_pos()
+    else:
+        aimForLookPos = enemysGoalCenter
     # field.strategy_image.draw_circle(enemysGoalCenter, (255, 255, 255), 1000)
+    pointsForScore = []
     if aux.is_point_inside_circle(thisR.get_pos(), enemysGoalCenter, 1050):
         # vectFromCenterToR = (thisR.get_pos()-enemysGoalCenter)
-        vectFromCenterToR = aux.rotate(field.enemy_goal.eye_forw, (thisR.get_pos()-enemysGoalCenter).arg())*1000
+        vectFromCenterToR = field.enemy_goal.eye_forw*1000
         # field.strategy_image.draw_line(vectFromCenterToR, enemysGoalCenter)
-        for angel in range(-180, 180+1, 4):#TODO for start look at small angels
+        for angel in range(-180, 180+1, 10):
             angelInRad = angel/180*math.pi
-            maybeScorePoint = aux.rotate(vectFromCenterToR, angelInRad)+enemysGoalCenter#TODO check logic rotate
+            maybeScorePoint = aux.rotate(vectFromCenterToR, angelInRad)+enemysGoalCenter
             argVectFromCenterToMaybeScorePoint = aux.wind_down_angle((maybeScorePoint-enemysGoalCenter).arg())
             if field.polarity == 1:
                 # field.strategy_image.draw_circle(thisR.get_pos(), size_in_mms=500)
                 
                 # print(aux.wind_down_angle(maybeScorePoint.arg()))
-                if -math.pi/2 > argVectFromCenterToMaybeScorePoint or argVectFromCenterToMaybeScorePoint > math.pi/2:
+                if -math.pi/2 >= argVectFromCenterToMaybeScorePoint or argVectFromCenterToMaybeScorePoint >= math.pi/2:
                     continue
-                field.strategy_image.draw_circle(maybeScorePoint)
             else:
-                if -math.pi/2 < argVectFromCenterToMaybeScorePoint < math.pi/2:
+                if -math.pi/2 <= argVectFromCenterToMaybeScorePoint <= math.pi/2:
                     continue
-                field.strategy_image.draw_circle(maybeScorePoint)
+            # field.strategy_image.draw_circle(maybeScorePoint)
             pointForScore = findPointForScore(field, maybeScorePoint)
             # field.strategy_image.draw_line(maybeScorePoint, enemysGoalCenter, (200, 0, 0), 100)
             # field.strategy_image.draw_line(pointForScore, enemysGoalCenter)
-            # if pointForScore != None:
-            #     # field.strategy_image.draw_line(maybeScorePoint, enemysGoalCenter, (200, 0, 0), 100)
-            #     # actions[idFrom] = Actions.GoToPoint(pointForScore, (otherAttacker.get_pos()-thisR.get_pos()).arg())
-            #     break
+            if pointForScore != None:
+                pointsForScore.append(maybeScorePoint)
+                field.strategy_image.draw_circle(maybeScorePoint)
+                # field.strategy_image.draw_line(maybeScorePoint, enemysGoalCenter, (200, 0, 0), 100)
+        nearestScorePoint = aux.find_nearest_point(thisR.get_pos(), pointsForScore)
+        field.strategy_image.draw_circle(nearestScorePoint, (0, 0, 255), 50)
+        actions[idFrom] = Actions.GoToPoint(nearestScorePoint, (aimForLookPos-thisR.get_pos()).arg())
     else:
         nearestPoint = aux.nearest_point_on_circle(thisR.get_pos(), enemysGoalCenter, 1000)
-        # actions[idFrom] = Actions.GoToPoint(nearestPoint, (otherAttacker.get_pos()-thisR.get_pos()).arg())
+        actions[idFrom] = Actions.GoToPoint(nearestPoint, (aimForLookPos-thisR.get_pos()).arg())
 
 
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
@@ -241,7 +247,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom = None):#WORK!!!
+def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True):#WORK!!!
     """
     Find the nearest point to a given point (center) from a list, optionally excluding some points.
 
@@ -268,8 +274,9 @@ def findPointForScore(field: fld.Field, pointFrom = None):#WORK!!!
                 """if noone enemy r prevent this kick"""
                 min_dist = aux.dist(pointFrom, point)
                 closest = point
-    if closest != None:
-        field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
-    else:
-        field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
+    if draw:
+        if closest != None:
+            field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
+        else:
+            field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=100)
     return closest
