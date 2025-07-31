@@ -268,7 +268,7 @@ def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True):#WO
     d = field.enemy_goal.up.y - field.enemy_goal.down.y
     points = [aux.Point(field.enemy_goal.up.x, field.enemy_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
     enemys = field.active_enemies(True)
-    enemys = field.enemies
+    # enemys = field.enemies
     closest = None
     min_dist = 10e10
     for _, point in enumerate(points):
