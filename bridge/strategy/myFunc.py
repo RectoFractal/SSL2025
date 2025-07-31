@@ -120,24 +120,12 @@ def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys,
     rToPass = None
     pointToPass = None
     if idFrom != const.GK:
-        nearestR = maybePassPoints
-        # for nearestR in maybePassPoints:
-        maybePassPoint = nearestR.get_pos()
-
-        for enemyR in enemys:
-            if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
-                break
+        if len(enemys) == 0:
+            rToPass = maybePassPoints
+            pointToPass = maybePassPoint.get_pos()
         else:
-            rToPass = nearestR
-            pointToPass = maybePassPoint
-        if rToPass == None:
-            openForPass(field, nearestR.r_id, actions)
-
-    else:
-        for nearestR in maybePassPoints:
-            if nearestR == field.allies[const.GK]:
-                field.strategy_image.draw_circle(field.allies[const.GK].get_pos(), (0, 200, 255), 50)
-                continue
+            nearestR = maybePassPoints
+            # for nearestR in maybePassPoints:
             maybePassPoint = nearestR.get_pos()
 
             for enemyR in enemys:
@@ -146,9 +134,29 @@ def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys,
             else:
                 rToPass = nearestR
                 pointToPass = maybePassPoint
-                break
-        if rToPass == None:
-            openForPass(field, maybePassPoints[0].r_id, actions)
+            if rToPass == None:
+                openForPass(field, nearestR.r_id, actions)
+
+    else:
+        if len(enemys) == 0:
+            rToPass = maybePassPoints
+            pointToPass = maybePassPoint.get_pos()
+        else:
+            for nearestR in maybePassPoints:
+                if nearestR == field.allies[const.GK]:
+                    field.strategy_image.draw_circle(field.allies[const.GK].get_pos(), (0, 200, 255), 50)
+                    continue
+                maybePassPoint = nearestR.get_pos()
+
+                for enemyR in enemys:
+                    if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
+                        break
+                else:
+                    rToPass = nearestR
+                    pointToPass = maybePassPoint
+                    break
+            if rToPass == None:
+                openForPass(field, maybePassPoints[0].r_id, actions)
     return [rToPass, pointToPass]
 
 def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
@@ -156,7 +164,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
     exclude = [idFrom]
     # pointFrom = field.allies[idFrom].get_pos()
     pointFrom = field.ball.get_pos()
-    enemys = field.active_enemies()
+    enemys = field.active_enemies(True)
     pointToPass = None
     rToPass = None
 
@@ -273,7 +281,7 @@ def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: 
     min_dist = 10e10
     for _, point in enumerate(points):
         if aux.dist(pointFrom, point) < min_dist:
-            if all(len(aux.line_circle_intersect(pointFrom, point, enemyR.get_pos(), const.ROBOT_R*k, "S")) == 0 for enemyR in enemys):
+            if all(len(aux.line_circle_intersect(pointFrom, point, enemyR.get_pos(), const.ROBOT_R*k, "S")) == 0 for enemyR in enemys) or len(enemys) == 0:
                 """if noone enemy r prevent this kick"""
                 min_dist = aux.dist(pointFrom, point)
                 closest = point

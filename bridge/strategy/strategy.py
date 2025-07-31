@@ -533,22 +533,26 @@ class Strategy:
                 """if GK have ball"""
                 status = "if GK have ball"
                 # print(alliesWithoutGK, field.allies)
-                nearestRToGK = aux.find_nearest_point(field.ball.get_pos(), alliesWithoutGK)
-                if nearestRToGK == field.allies[idxThisR]:
-                    """if this R nearest to GK"""
-                    openForPass(field, idxThisR, actions)
-                else:
-                    """if not this r nearest to GK"""
-                    actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), 0)
+                if len(alliesWithoutGK) != 0:
+                    nearestRToGK = aux.find_nearest_point(field.ball.get_pos(), alliesWithoutGK)
+                    if nearestRToGK == field.allies[idxThisR]:
+                        """if this R nearest to GK"""
+                        openForPass(field, idxThisR, actions)
+                    else:
+                        """if not this r nearest to GK"""
+                        actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), 0)
             elif nearestRToBall == field.enemies[const.GK]:
                 """if nearest r to ball is enemy GK"""
                 status = "if nearest r to ball is enemy GK"
                 enemyRsPos = field.active_enemies().copy()
-                enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
-                enemyRPos = enemyRsPos[0]
-                pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
-                actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
-                field.allies[idxThisR].set_dribbler_speed(15)
+                if len(enemyRsPos) != 0:
+                    enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
+                    enemyRPos = enemyRsPos[0]
+                    pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
+                    actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
+                    field.allies[idxThisR].set_dribbler_speed(15)
+                else:
+                    actions[idxThisR] = Actions.BallGrab((ballPos-field.enemy_goal.center).arg())
             elif ballPos.x*field.polarity > 0: # TODO need test
                 """if ball on our part of field"""
                 status = "if ball on our part of field"
