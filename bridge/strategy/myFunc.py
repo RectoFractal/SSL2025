@@ -7,7 +7,7 @@ from bridge.auxiliary import aux, fld, rbt  # type: ignore
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
 def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, idOtherAttacker: int | None):
-    field.allies[idFrom].set_dribbler_speed(1)
+    field.allies[idFrom].set_dribbler_speed(15)
     rCircle = 1100
     thisR = field.allies[idFrom]
     enemysGoalCenter = field.enemy_goal.center
@@ -244,7 +244,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
         field.strategy_image.draw_circle(pointForGK, color=(0, 0, 255), size_in_mms=50)
         # print(pointForGK)
         actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
-        field.allies[const.GK].set_dribbler_speed(1)
+        field.allies[const.GK].set_dribbler_speed(15)
         # else:
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
