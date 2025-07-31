@@ -265,22 +265,26 @@ class Strategy:
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
         
-        if len(field.allies) != 0 and field.allies is not None:
+        if len(field.allies) != 0 and field.allies is not None and len(field.active_allies()) != 0:
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
-                print(len(field.active_enemies()), [r.r_id for r in field.active_enemies()])
-                if len(field.active_enemies()) == 2:
-                    idx = 0
-                    rPos = field.allies[idx].get_pos()
-                    ballPos = field.ball.get_pos()
-                    # enemyRPos = field.allies[3].get_pos() # HARD CODE
-                    enemyRsPos = field.active_enemies().copy()
-                    # print(len(enemyRsPos))
-                    enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
-                    enemyRPos = enemyRsPos[0]
-                    # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
-                    pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
-                    actions[idx] = Actions.GoToPoint(pointGo, 0)
+                self.attacker(field, actions, 0, 2)
+                self.attacker(field, actions, 2, 0)
+                # goToNearestScorePoint(field, actions, 0, 2)
+                # goToNearestScorePoint(field, actions, 2, 0)
+                # print(len(field.active_enemies()), [r.r_id for r in field.active_enemies()])
+                # if len(field.active_enemies()) == 2:
+                #     idx = 0
+                #     rPos = field.allies[idx].get_pos()
+                #     ballPos = field.ball.get_pos()
+                #     # enemyRPos = field.allies[3].get_pos() # HARD CODE
+                #     enemyRsPos = field.active_enemies().copy()
+                #     # print(len(enemyRsPos))
+                #     enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
+                #     enemyRPos = enemyRsPos[0]
+                #     # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
+                #     pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
+                #     actions[idx] = Actions.GoToPoint(pointGo, 0)
                 # goToNearestScorePoint(field, actions, 0, 2)
                 # self.attacker(field, actions, 0, 2)
                 # if field.is_ball_in(field.allies[1]):
@@ -333,7 +337,7 @@ class Strategy:
                 # findNearestScorePoint(field, actions, 0, 2)
                 
 
-                # self.GKLastState = GK(field, actions, self.GKLastState) 
+                self.GKLastState = GK(field, actions, self.GKLastState) 
                 # now = time()%8//4 # for change koef
                 # match now:
                 #     case 0:
@@ -381,8 +385,11 @@ class Strategy:
             self.idDoPass = None
             """pass done"""
 
-    def gettingPass(self, field, actions, idxThisR):
-        if not field.is_ball_in(field.allies[self.idGettingPass]):
+    def gettingPass(self, field: fld.Field, actions, idxThisR):
+        thisR = field.allies[self.idGettingPass]
+        if self.idDoPass != None:
+            actions[self.idGettingPass] = Actions.GoToPoint(thisR.get_pos(), (field.allies[self.idDoPass].get_pos()-thisR.get_pos()).arg())
+        elif not field.is_ball_in(field.allies[self.idGettingPass]):
             # field.strategy_image.send_telemetry("status pass", "getting pass")
             """getting pass"""
             actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
@@ -397,8 +404,10 @@ class Strategy:
         status = None
         enemys = field.active_enemies(True)
         allies = field.allies
-        alliesWithoutGK = allies.copy()
-        alliesWithoutGK.remove(field.allies[const.GK])
+        # alliesWithoutGK = allies.copy()
+        # alliesWithoutGK.remove(field.allies[const.GK])
+        alliesRWithoutGK = field.active_allies()
+        alliesWithoutGK = [r.get_pos() for r in alliesRWithoutGK]
         thisR: rbt.Robot = allies[idxThisR]
         thisRPos = thisR.get_pos()
         otherAttackerR = allies[idxOtherAttacker]
@@ -408,15 +417,17 @@ class Strategy:
 
         if self.idDoPass == idxThisR:
             """if thid R do pass"""
+            status = "1"
             self.doPass(field, actions, idxThisR)
         elif idxThisR == self.idGettingPass:
             """if this R getting pass"""
+            status = "2"
             self.gettingPass(field, actions, idxThisR)
         elif actions[idxThisR] == None:
             """if we dont send command on this robot"""
             allR = enemys.copy() + allies.copy()
             nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
-            if nearestRToBall == thisR:
+            if nearestRToBall == thisR: # TODO if nearest R to ball - enemy GK
                 """if nearest to ball bot this"""
                 if field.is_ball_in(thisR):
                     # field.strategy_image.draw_circle(thisR.get_pos(), (255, 255, 255), 50)
@@ -433,7 +444,7 @@ class Strategy:
                         # nearestEnemyRToOtherAttacker = fld.find_nearest_robot(otherAttackerR.get_pos(), enemys)
 
                         # pointForScoreForOtherAttacker = findPointForScore(field, otherAttackerR.get_pos())
-
+                        status = "if this r cant do score"
                         self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
                         # if pointForScoreForOtherAttacker != None:
                         #     """if other attacker can do score, pass other attacker"""
@@ -452,22 +463,35 @@ class Strategy:
                         actions[idxThisR] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#TEST
                     else:
                         """do do pass and wait for result"""
+                        status = "do do pass and wait for result"
                         actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
             elif nearestRToBall == allies[idxOtherAttacker]:
                     """if other attacker have ball"""
+                    status = "if other attacker have ball"
                     goToNearestScorePoint(field, actions, idxThisR, idxOtherAttacker)
             elif nearestRToBall == allies[const.GK]:
                 """if GK have ball"""
-                print(alliesWithoutGK, field.allies)
+                status = "if GK have ball"
+                # print(alliesWithoutGK, field.allies)
                 nearestRToGK = aux.find_nearest_point(field.ball.get_pos(), alliesWithoutGK)
                 if nearestRToGK == allies[idxThisR]:
                     """if this R nearest to GK"""
                     openForPass(field, idxThisR, actions)
                 else:
                     """if not this r nearest to GK"""
-                    actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0))
+                    actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), 0)
+            elif nearestRToBall == enemys[const.GK]:
+                """if nearest r to ball is enemy GK"""
+                status = "if nearest r to ball is enemy GK"
+                enemyRsPos = field.active_enemies().copy()
+                enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
+                enemyRPos = enemyRsPos[0]
+                pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
+                actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
+                field.allies[idxThisR].set_dribbler_speed(15)
             elif ballPos.x*field.polarity > 0: # TODO need test
                 """if ball on our part of field"""
+                status = "if ball on our part of field"
                 dist2BallFromThisR = aux.dist(ballPos, thisR.get_pos())
                 dist2BallFromOtherR = aux.dist(ballPos, otherAttackerR.get_pos())
                 if dist2BallFromThisR < dist2BallFromOtherR:
@@ -490,12 +514,25 @@ class Strategy:
                     enemyRPos = enemyRsPos[0]
                     # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
                     pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
-                    actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos).arg())
+                    actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
                     field.allies[idxThisR].set_dribbler_speed(15)
-            else: # TODO Fast!!! """if on our part of field block maybe score with dribbler else grab ball"""
-                actions[idxThisR] = Actions.GoToPoint(thisR.get_pos(), 0)  
-                # field.strategy_image.send_telemetry("status", "if nearest R our open for pass")
-                status = "if nearest R enenmy intersept maybe pass or try take ball, depend from dist"
-                # DONT DONE
-                """if nearest R enenmy intersept maybe pass or try take ball, depend from dist"""
+            else:
+                """if ball not on our part of field"""
+                status = "if ball not on our part of field"
+                enemyRsPos = field.active_enemies().copy()
+                enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
+                enemyRPos = enemyRsPos[0]
+                dist2BallFromThisR = aux.dist(ballPos, thisR.get_pos())
+                dist2BallFromOtherR = aux.dist(ballPos, otherAttackerR.get_pos())
+                if dist2BallFromThisR < dist2BallFromOtherR:
+                    """if this attacker nearest to ball then other, take ball"""
+                    actions[idxThisR] = Actions.BallGrab((enemyRPos.get_pos()-ballPos).arg())
+                else:
+                    """if nearest attacker for ball other, block maybe pass"""
+                    # enemyRPos = field.allies[3].get_pos() # HARD CODE
+                    # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
+                    pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
+                    actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
+                    field.allies[idxThisR].set_dribbler_speed(15)
+        print(status)
         field.strategy_image.send_telemetry("statusAttacker"+str(idxThisR), status)
