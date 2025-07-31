@@ -249,7 +249,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True):#WORK!!!
+def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5):#WORK!!!
     """
     Find the nearest point to a given point (center) from a list, optionally excluding some points.
 
@@ -273,7 +273,7 @@ def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True):#WO
     min_dist = 10e10
     for _, point in enumerate(points):
         if aux.dist(pointFrom, point) < min_dist:
-            if all(len(aux.line_circle_intersect(pointFrom, point, enemyR.get_pos(), const.ROBOT_R*1.5, "S")) == 0 for enemyR in enemys):
+            if all(len(aux.line_circle_intersect(pointFrom, point, enemyR.get_pos(), const.ROBOT_R*k, "S")) == 0 for enemyR in enemys):
                 """if noone enemy r prevent this kick"""
                 min_dist = aux.dist(pointFrom, point)
                 closest = point
@@ -281,5 +281,5 @@ def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True):#WO
         if closest != None:
             field.strategy_image.draw_line(pointFrom, closest, color=(0, 255, 0))
         else:
-            field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=1000)
+            field.strategy_image.draw_circle(pointFrom, color=(0, 0, 0), size_in_mms=50)
     return closest
