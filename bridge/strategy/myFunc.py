@@ -185,6 +185,8 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
             actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
         else:
             field.strategy_image.send_telemetry("status pass", "dont have point")
+    if actions[idFrom] == None:
+        actions[idFrom] = Actions.GoToPoint(field.allies[idFrom].get_pos(), (field.ball.get_pos()-field.allies[idFrom].get_pos()).arg())#TODO problem with angle
     if rToPass != None:
         return rToPass.r_id
     else:

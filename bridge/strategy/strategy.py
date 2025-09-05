@@ -21,7 +21,7 @@ class Strategy:
         self
     ) -> None:
         self.we_active = False
-        self.state = 1
+        self.state = 0
         self.idGettingPass = None
         self.idDoPass = None
         self.GKLastState = None
@@ -264,7 +264,7 @@ class Strategy:
 
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
-        play = True
+        play = False
         if len(field.active_allies(True)) != 0 and len(field.active_enemies(True)) != 0:
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
@@ -280,6 +280,26 @@ class Strategy:
                     self.attacker(field, actions, 2, 0)
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
+                # for test pass
+                # TODO problem with opening for pass
+                nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
+                otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE\
+                ballPos = field.ball.get_pos()
+                # actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
+                if self.idDoPass == None and self.idGettingPass == None:
+                    self.idDoPass = nearestRToBall.r_id
+                if self.idDoPass != None:
+                    self.state = self.idDoPass
+                    self.doPass(field, actions, nearestRToBall.r_id)
+                else:
+                    actions[self.state] = Actions.GoToPoint(field.allies[self.state].get_pos(), 0)
+                if self.idGettingPass == None:
+                    actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
+                else:
+                    self.gettingPass(field, actions, otherR.r_id)
+                print(self.idDoPass, self.idGettingPass)
+
+
                 # goToNearestScorePoint(field, actions, 0, 2)
                 # goToNearestScorePoint(field, actions, 2, 0)
                 # print(len(field.active_enemies()), [r.r_id for r in field.active_enemies()])
@@ -486,7 +506,7 @@ class Strategy:
             allR = enemies.copy() + allies.copy()
             nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), allR)
             field.strategy_image.draw_circle(nearestRToBall.get_pos(), (200, 0, 255), 50)
-            print(nearestRToBall.r_id)
+            # print(nearestRToBall.r_id)
             if nearestRToBall == thisR: # TODO if nearest R to ball - enemy GK
                 """if nearest to ball bot this"""
                 if field.is_ball_in(thisR):
@@ -600,5 +620,5 @@ class Strategy:
                     pointGo = aux.point_on_line(ballPos, nearestEnemyR.get_pos(), 300)
                     actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-nearestEnemyR.get_pos()).arg())
                     field.allies[idxThisR].set_dribbler_speed(15)
-        print(status, idxThisR)
+        # print(status, idxThisR)
         field.strategy_image.send_telemetry("statusAttacker"+str(idxThisR), status)
