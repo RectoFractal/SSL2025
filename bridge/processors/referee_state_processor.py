@@ -12,6 +12,7 @@ from strategy_bridge.model.referee import RefereeCommand
 from bridge import const
 from bridge.auxiliary import aux, fld
 from bridge.const import State
+from environment.setup_environment import get_from_env, get_from_env_specific_type
 
 
 class Command(Enum):
@@ -126,26 +127,32 @@ class StateMachine:
         return f"State: {self.__state}, Active: {self.__active}"
 
 
+# SETTING ENVIRONMENT CONSTANTS
+DEBUG_MODE: bool = get_from_env("DEBUG_MODE", bool)
+DEBUG_GAME_STATE: const.State = get_from_env_specific_type("DEBUG_GAME_STATE", const.State)
+DEBUG_ACTIVE_TEAM: const.Color = get_from_env_specific_type("DEBUG_ACTIVE_TEAM", const.Color)
+DEBUG_PREPARATION_DELAY: float = get_from_env("DEBUG_PREPARATION_DELAY", float)
+# DO NOT CHANGE THESE VALUES
+
+
 class RefereeStateProcessor:
     """Class to work with referee commands"""
 
-    def __init__(
-        self,
-        debug_mode: bool = False,
-        debug_game_state: State = State.STOP,
-        debug_active_team: const.Color = const.Color.ALL,
-        debug_preparation_delay: float = 5.0,
-    ) -> None:
+    def __init__(self) -> None:
         """
         Инициализация
         """
         self.receiver = ZmqReceiver(port=config.REFEREE_COMMANDS_SUBSCRIBE_PORT)
 
-        self.debug_mode = debug_mode
-        self.debug_game_state = debug_game_state
-        self.debug_active_team = debug_active_team
-        self.debug_preparation_delay = debug_preparation_delay
+        self.debug_mode = DEBUG_MODE
+        self.debug_game_state = DEBUG_GAME_STATE
+        self.debug_active_team = DEBUG_ACTIVE_TEAM
+        self.debug_preparation_delay = DEBUG_PREPARATION_DELAY
 
+        print(
+            f"Found data about debug mode:\n\tIs used:\t\t{self.debug_mode}\n\tDEBUG game state:\t{self.debug_game_state}\n",
+            f"\tDEBUG active team:\t{self.debug_active_team}\n\tTime for preparation:\t{self.debug_preparation_delay}",
+        )
         # Referee fields
         self.state_machine = StateMachine()
         self.cur_cmd_state: Optional[int] = None
@@ -167,6 +174,9 @@ class RefereeStateProcessor:
                 State.FREE_KICK,
                 State.PENALTY,
             ]:
+                if self.debug_game_state != State.FREE_KICK:
+                    self.state_machine.active_team(self.debug_active_team.value)
+
                 self.preparation_flag = True
                 self.preparation_timer = time()
 

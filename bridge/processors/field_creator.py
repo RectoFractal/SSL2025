@@ -23,13 +23,6 @@ class FieldCreator(BaseProcessor):
     reduce_pause_on_process_time: bool = False
     _ssl_converter: SSL_WrapperPacket = attr.ib(init=False)
 
-    # for RefereeStateProcessor
-    debug_mode: bool = False
-    debug_game_state: State = State.STOP
-    debug_active_team: const.Color = const.Color.ALL
-    debug_preparation_delay: float = 5.0
-    # time in seconds before command free_kick, kickoff or penalty
-
     def initialize(self, data_bus: DataBus) -> None:
         """
         Инициализация
@@ -43,12 +36,7 @@ class FieldCreator(BaseProcessor):
         self.field = fld.Field(const.COLOR)
         self.field.field_image.timer = drawing.FeedbackTimer(time(), 5, 30)
 
-        self.referee_processor = RefereeStateProcessor(
-            debug_mode=self.debug_mode,
-            debug_game_state=self.debug_game_state,
-            debug_active_team=self.debug_active_team,
-            debug_preparation_delay=self.debug_preparation_delay,
-        )
+        self.referee_processor = RefereeStateProcessor()
 
     def process(self) -> None:
         self.process_field()

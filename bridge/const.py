@@ -4,6 +4,8 @@
 
 from enum import Enum
 
+from environment.setup_environment import get_from_env, get_from_env_specific_type
+
 
 class State(Enum):
     """Класс с состояниями игры"""
@@ -44,19 +46,23 @@ class Div(Enum):
     C = 2
 
 
-##################################################
-# GAME SETTING CONSTS
-DIV = Div.C
-COLOR = Color.BLUE
-POLARITY = 1  # -1 если ворота синих на +x; 1 если ворота синих на -x
+IS_SIMULATOR_USED: bool = get_from_env("IS_SIMULATOR_USED", bool)
 
-IS_SIMULATOR_USED = True
+DIV: Div = get_from_env_specific_type("DIV", Div)
+COLOR: Color = get_from_env_specific_type("COLOR", Color)
+POLARITY: int = get_from_env("POLARITY", int)
+if POLARITY not in [1, -1]:
+    RED_BOLD = "\033[91m\033[1m"
+    RESET = "\033[0m"
+    raise RuntimeError(f"{RED_BOLD}POLARITY must be 1 or -1, got: {POLARITY}{RESET}")
+
+GK: int = get_from_env("GK", int)
+ENEMY_GK: int = get_from_env("ENEMY_GK", int)
+
+
 SELF_PLAY = False
-
 DEBUG_HALF = 0  # 1 = +x, -1 = -x, 0 = not debug
 
-GK = 1
-ENEMY_GK = 1
 
 ROBOTS_MAX_COUNT: int = 32
 TEAM_ROBOTS_MAX_COUNT: int = ROBOTS_MAX_COUNT // 2

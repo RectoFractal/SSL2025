@@ -9,3 +9,4 @@ robot_command_sink_rules
 settings.json
 bridge/processors_new/
 bridge/processors/tests_on_filed.py
+.env

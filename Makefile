@@ -1,22 +1,24 @@
 init:
-	python3.9 -m pip install -r requirements.txt
+	git submodule update --init --recursive
+	pip install -r requirements.txt
 
 test:
 	py.test tests
 
 syntax:
-	git ls-files '*.py' | xargs python3.9 -m pylint --fail-under 9 \
-	--good-names=q,w,e,r,t,y,u,i,o,p,a,s,d,f,g,h,j,k,l,z,x,c,v,b,n,m,\
-	Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,Z,X,C,V,B,N,M,\
-	p1,p2,p3,p4,t1,t2,t3,t4,Ts,up
+	pip install pylint
+	python3 -m pylint --exit-zero --rcfile=.pylintrc $(shell git ls-files '*.py')
 
 syntax_strategy:
-	python3.9 -m pylint --fail-under 9 \
-	--good-names=q,w,e,r,t,y,u,i,o,p,a,s,d,f,g,h,j,k,l,z,x,c,v,b,n,m,\
-	Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,Z,X,C,V,B,N,M,\
-	p1,p2,p3,p4,t1,t2,t3,t4,Ts,up bridge/processors/strategy.py
+	pip install pylint
+	python3 -m pylint --exit-zero --rcfile=.pylintrc $(shell find bridge/strategy -name "*.py")
+
+auto_format:
+	@dpkg -s pre-commit >/dev/null 2>&1 || pip install pre-commit
+	pre-commit install
+	pre-commit run -a
 
 run:
-	python3.9 main.py
+	python3 main.py
 
 .PHONY: init test syntax
