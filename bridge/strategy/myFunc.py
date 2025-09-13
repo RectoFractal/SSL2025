@@ -50,6 +50,7 @@ def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, 
     #     actions[idFrom] = Actions.GoToPoint(nearestPoint, (aimForLookPos-thisR.get_pos()).arg())
 
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
+    ballOnOurPartOfField = ballPos.x*field.polarity > 0
     
     ballPos = field.ball.get_pos()
     thisR = field.allies[idRWhichOpen]
@@ -59,7 +60,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     enemysR = field.active_enemies(True)
     rPreventPass = False
 
-    for angel in range(-90, 90+1, 5):
+    for angel in range(-180, 180+1, 5):
         angelInRad = angel/180*math.pi
         maybePassPoint = aux.rotate(vectFromBallToR, angelInRad)+ballPos
         field.strategy_image.draw_circle(maybePassPoint)
@@ -77,7 +78,10 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         rPreventPass = False
     # print(pointsForScore, field.ball.get_pos())
     if len(pointsForScore) != 0:
-        nearestScorePoint = aux.find_nearest_point(thisRPos, pointsForScore)
+        if ballOnOurPartOfField:
+            nearestScorePoint = aux.find_nearest_point(thisRPos, pointsForScore)
+        else:
+            nearestScorePoint = aux.find_nearest_point(field.enemy_goal.center, pointsForScore)
         field.strategy_image.draw_circle(nearestScorePoint, (0, 0, 255), 50)
         field.strategy_image.draw_line(ballPos, nearestScorePoint, (0, 0, 0), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(nearestScorePoint, (ballPos-thisR.get_pos()).arg())    
