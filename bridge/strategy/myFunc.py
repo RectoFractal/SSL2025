@@ -65,12 +65,12 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         field.strategy_image.draw_circle(maybePassPoint)
         # pointForScore = findPointForScore(field, maybePassPoint)
         for enemyR in enemysR: # NORM CODE
-            if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) > 0:
+            if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*2, "S")) > 0:
                 rPreventPass = True
                 field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), 50)
         # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
         # field.strategy_image.draw_line(pointForScore, ballPos)
-        if rPreventPass == False and aux.is_point_inside_poly(maybePassPoint, field.hull) and not aux.is_point_inside_poly(maybePassPoint, field.enemy_goal.hull):
+        if rPreventPass == False and aux.is_point_inside_poly(maybePassPoint, field.hull) and not aux.is_point_inside_poly(maybePassPoint, field.enemy_goal.hull) and not aux.is_point_inside_poly(maybePassPoint, field.ally_goal.hull):
             pointsForScore.append(maybePassPoint)
             field.strategy_image.draw_circle(maybePassPoint)
             # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
@@ -79,6 +79,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     if len(pointsForScore) != 0:
         nearestScorePoint = aux.find_nearest_point(thisRPos, pointsForScore)
         field.strategy_image.draw_circle(nearestScorePoint, (0, 0, 255), 50)
+        field.strategy_image.draw_line(ballPos, nearestScorePoint, (0, 0, 0), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(nearestScorePoint, (ballPos-thisR.get_pos()).arg())    
 
 def openForPass1(field: fld.Field, idRWhichOpen: int, actions: list[Action]):

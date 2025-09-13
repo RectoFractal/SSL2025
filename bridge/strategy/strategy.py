@@ -264,7 +264,8 @@ class Strategy:
 
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
-        play = False
+        play = True
+        test = 0
         if len(field.active_allies(True)) != 0 and len(field.active_enemies(True)) != 0:
             if field.ally_color == const.Color.BLUE:
                 # goToNearestScorePoint(field, actions, 0, 2)
@@ -284,20 +285,21 @@ class Strategy:
                 # for test pass
                 # openForPass(field, 2, actions)
                 # TODO problem with opening for pass
-                nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
-                otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE
-                ballPos = field.ball.get_pos()
-                # actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
-                if self.idDoPass == None and self.idGettingPass == None:
-                    self.idDoPass = nearestRToBall.r_id
-                if self.idDoPass != None:
-                    self.state = self.idDoPass
-                    self.doPass(field, actions, nearestRToBall.r_id)
-                else:
-                    actions[self.state] = Actions.GoToPoint(field.allies[self.state].get_pos(), 0)
-                if self.idGettingPass != None:
-                    self.gettingPass(field, actions, otherR.r_id)
-                print(self.idDoPass, self.idGettingPass)
+                if test == 1:
+                    nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
+                    otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE
+                    ballPos = field.ball.get_pos()
+                    # actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
+                    if self.idDoPass == None and self.idGettingPass == None:
+                        self.idDoPass = nearestRToBall.r_id
+                    if self.idDoPass != None:
+                        self.state = self.idDoPass
+                        self.doPass(field, actions, nearestRToBall.r_id)
+                    else:
+                        actions[self.state] = Actions.GoToPoint(field.allies[self.state].get_pos(), 0)
+                    if self.idGettingPass != None:
+                        self.gettingPass(field, actions, otherR.r_id)
+                    print(self.idDoPass, self.idGettingPass)
 
                 # goToNearestScorePoint(field, actions, 0, 2)
                 # goToNearestScorePoint(field, actions, 2, 0)
@@ -559,13 +561,13 @@ class Strategy:
                         openForPass(field, idxThisR, actions)
                     else:
                         """if not this r nearest to GK"""
-                        actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), 0)
+                        # actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), 0)
             elif nearestRToBall == field.enemies[const.GK]:
                 """if nearest r to ball is enemy GK"""
                 status = "if nearest r to ball is enemy GK"
                 enemyRsPos = field.active_enemies().copy()
                 if len(enemyRsPos) != 0:
-                    enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
+                    # enemyRsPos.remove(fld.find_nearest_robot(ballPos, enemyRsPos))
                     enemyRPos = enemyRsPos[0]
                     pointGo = aux.point_on_line(ballPos, enemyRPos.get_pos(), 300)
                     actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-enemyRPos.get_pos()).arg())
@@ -579,6 +581,7 @@ class Strategy:
                 dist2BallFromOtherR = aux.dist(ballPos, otherAttackerR.get_pos())
                 if dist2BallFromThisR < dist2BallFromOtherR:
                     """if this attacker nearest to ball then other"""
+                    #TODO PROBLEM!!!!!! PAROVOZ
                     mostLikelyPointForScore = aux.closest_point_on_line(field.ally_goal.up, field.ally_goal.down, ballPos)
                     pointForR = aux.closest_point_on_line(ballPos, mostLikelyPointForScore, thisR.get_pos())
                     if not aux.is_point_on_line(thisR.get_pos(), ballPos, mostLikelyPointForScore, "S"):
