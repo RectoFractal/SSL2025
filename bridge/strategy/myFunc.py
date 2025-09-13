@@ -295,7 +295,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5):#WORK!!!
+def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5, reverse: bool = False):#WORK!!!
     """
     Find the nearest point to a given point (center) from a list, optionally excluding some points.
 
@@ -311,9 +311,14 @@ def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: 
         pointFrom = field.ball.get_pos()
     qPoint = 8
     qPoint +=2
-    d = field.enemy_goal.up.y - field.enemy_goal.down.y
-    points = [aux.Point(field.enemy_goal.up.x, field.enemy_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
-    enemys = field.active_enemies(True)
+    if not reverse:
+        d = field.enemy_goal.up.y - field.enemy_goal.down.y
+        points = [aux.Point(field.enemy_goal.up.x, field.enemy_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
+        enemys = field.active_enemies(True)
+    else:
+        d = field.ally_goal.up.y - field.ally_goal.down.y
+        points = [aux.Point(field.ally_goal.up.x, field.ally_goal.up.y-(d/qPoint*i)) for i in range(1, qPoint)]
+        enemys = field.active_allies(True)
     # enemys = field.enemies
     closest = None
     min_dist = 10e10

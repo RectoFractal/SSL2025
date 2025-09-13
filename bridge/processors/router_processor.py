@@ -59,7 +59,8 @@ class CommandSink(BaseProcessor):
 
         context = zmq.Context()
         self.s_control = context.socket(zmq.PUB)
-        self.s_control.connect("tcp://172.20.10.2:5051")
+        # self.s_control.connect("tcp://172.20.10.2:5051") #for my network
+        self.s_control.connect("tcp://172.30.109.83:5051") #for ITMO GUETS
 
     def process(self) -> None:
         """

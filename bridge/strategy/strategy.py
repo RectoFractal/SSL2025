@@ -265,6 +265,7 @@ class Strategy:
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
         play = True
+        bothTeams = False
         test = 0
         if len(field.active_allies(True)) != 0 and len(field.active_enemies(True)) != 0:
             if field.ally_color == const.Color.BLUE:
@@ -371,7 +372,7 @@ class Strategy:
                 # nearestEnemyR = fld.find_nearest_robot(ballPos, enemies)
                 # actions[2] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
                 # actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#TEST
-                if play:
+                if play and bothTeams:
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     self.attacker(field, actions, 0, 2)
@@ -582,7 +583,9 @@ class Strategy:
                 if dist2BallFromThisR < dist2BallFromOtherR:
                     """if this attacker nearest to ball then other"""
                     #TODO PROBLEM!!!!!! PAROVOZ
-                    mostLikelyPointForScore = aux.closest_point_on_line(field.ally_goal.up, field.ally_goal.down, ballPos)
+                    status += "parovoz"
+                    mostLikelyPointForScore = findPointForScore(field, ballPos, reverse=True)
+                    # mostLikelyPointForScore = aux.closest_point_on_line(field.ally_goal.up, field.ally_goal.down, ballPos)
                     pointForR = aux.closest_point_on_line(ballPos, mostLikelyPointForScore, thisR.get_pos())
                     if not aux.is_point_on_line(thisR.get_pos(), ballPos, mostLikelyPointForScore, "S"):
                         """if this r not block maybe score, block"""
