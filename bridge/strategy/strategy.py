@@ -498,7 +498,7 @@ class Strategy:
                 else:
                     actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())#GOOD
         elif self.idDoPass == idxThisR:
-            """if thid R do pass"""
+            """if this R do pass"""
             status = "1"
             self.doPass(field, actions, idxThisR)
         elif idxThisR == self.idGettingPass:

@@ -55,6 +55,8 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     thisR = field.allies[idRWhichOpen]
     thisRPos = thisR.get_pos()
     vectFromBallToR = thisRPos-field.ball.get_pos()
+    if vectFromBallToR.mag() < 1000:
+        vectFromBallToR = vectFromBallToR.unity() * 1000
     pointsForScore = []
     enemysR = field.active_enemies(True)
     rPreventPass = False
@@ -65,8 +67,8 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         maybePassPoint = aux.rotate(vectFromBallToR, angelInRad)+ballPos
         field.strategy_image.draw_circle(maybePassPoint)
         # pointForScore = findPointForScore(field, maybePassPoint)
-        for enemyR in enemysR: # NORM CODE
-            if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*2, "S")) > 0:
+        for enemyR in enemysR: #TODO exclude enemy r, which closer then X mm
+            if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*1.5, "S")) > 0:#TODO make that it depend from distans: more dist to ball, more koef
                 rPreventPass = True
                 field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), 50)
         # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
@@ -86,76 +88,6 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         field.strategy_image.draw_line(ballPos, nearestScorePoint, (0, 0, 0), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(nearestScorePoint, (ballPos-thisR.get_pos()).arg())    
 
-def openForPass1(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
-    # print(field.ally_goal.center)
-    # field.strategy_image.draw_circle(field.ally_goal.center)
-    field.allies[idRWhichOpen].set_dribbler_speed(0)
-    ballPos = field.ball.get_pos()
-    # enemysR = field.enemies
-    enemysR = field.active_enemies(True)
-    rPos = field.allies[idRWhichOpen].get_pos()
-    rWhichPreventPass = None
-    pointToGo = None
-    vectFromRToBall = ballPos - rPos
-    for enemyR in enemysR: # NORM CODE
-        if len(aux.line_circle_intersect(ballPos, rPos, enemyR.get_pos(), const.ROBOT_R, "S")) != 0:
-            rWhichPreventPass = enemyR
-            field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), 50)
-    # if len(aux.line_circle_intersect(ballPos, rPos, enemysR[3].get_pos(), const.ROBOT_R, "S")) != 0: # HARD CODE!!!
-    #     rWhichPreventPass = enemysR[3]
-    if rWhichPreventPass != None:
-        # if aux.get_angle_between_points(rWhichPreventPass.get_pos(), ballPos, rPos) > 0:
-        vectL = aux.rotate(vectFromRToBall.unity(), -math.pi/2)
-        pointToGoL = vectL*700 + rPos
-        if pointToGoL.x*field.polarity > 0:
-            pointToGoL = aux.rotate(vectL, math.pi)*700 + rPos
-
-        vectR = aux.rotate(vectFromRToBall.unity(), math.pi/2)
-        pointToGoR = vectR*700 + rPos
-        if pointToGoR.x*field.polarity > 0:
-            pointToGoR = aux.rotate(vectR, math.pi)*700 + rPos
-
-        futurePointL = vectL*700*2 + rPos
-        futurePointR = vectR*700*2 + rPos
-        field.strategy_image.draw_circle(futurePointL, (255, 0, 0))
-        field.strategy_image.draw_circle(futurePointR, (0, 255, 0))
-        weAreOpenInFutureL = all((len(aux.line_circle_intersect(futurePointL, rPos, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) != 0) for enemyR in enemysR)
-        weAreOpenInFutureR = all((len(aux.line_circle_intersect(futurePointR, rPos, enemyR.get_pos(), const.ROBOT_R*1.2, "S")) != 0) for enemyR in enemysR)
-        # print(weAreOpenInFutureL)
-        if aux.dist(pointToGoL, field.enemy_goal.center) < aux.dist(pointToGoR, field.enemy_goal.center):
-            """open to left"""
-            if not weAreOpenInFutureL and not weAreOpenInFutureR:
-                if aux.is_point_inside_poly(futurePointL, field.hull):
-                    pointToGo = pointToGoL
-                else:
-                    pointToGo = pointToGoR
-            else:
-                if not weAreOpenInFutureL:
-                    pointToGo = pointToGoL
-                else:
-                    pointToGo = pointToGoR
-        else:
-            """open to right"""
-            if not weAreOpenInFutureL and not weAreOpenInFutureR:
-                if aux.is_point_inside_poly(futurePointR, field.hull):
-                    pointToGo = pointToGoR
-                else:
-                    pointToGo = pointToGoL
-            else:
-                if not weAreOpenInFutureR:
-                    pointToGo = pointToGoR
-                else:
-                    pointToGo = pointToGoL
-        field.strategy_image.draw_line(pointToGo, rPos, (255, 255, 255), 20)
-        field.strategy_image.draw_circle(pointToGo, size_in_mms=100)
-        print("id =",idRWhichOpen)
-        actions[idRWhichOpen] = Actions.GoToPoint(pointToGo, (ballPos-pointToGo).arg())
-        # field.allies[idRWhichOpen].set_dribbler_speed(1)
-    else:
-        field.strategy_image.draw_circle(rPos, (0, 0, 0), 50)
-        # actions[idRWhichOpen] = Actions.GoToPoint(rPos, (ballPos-rPos).arg())
-        actions[idRWhichOpen] = Actions.BallGrab((ballPos-rPos).arg())
-
 def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys, pointFrom, idFrom = const.GK):
     rToPass = None
     pointToPass = None
@@ -168,8 +100,8 @@ def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys,
             # for nearestR in maybePassPoints:
             maybePassPoint = nearestR.get_pos()
 
-            for enemyR in enemys:
-                if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 200:
+            for enemyR in enemys:#TODO exclude enemy r, which closer then X mm
+                if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < 150:#TODO make that it depend from distans: more dist to ball, more koef
                     break
             else:
                 rToPass = nearestR
