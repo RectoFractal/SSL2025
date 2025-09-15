@@ -666,7 +666,7 @@ class Strategy:
                     status += "if nearest attacker for ball other, block maybe pass"
                     # enemyRPos = field.allies[3].get_pos() # HARD CODE
                     # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
-                    #TODO resolve problem with choise if enemy, which we will block
+                    #TODO resolve problem with choise enemy, which we will block
                     pointGo = aux.point_on_line(ballPos, nearestEnemyR.get_pos(), 300)
                     actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-nearestEnemyR.get_pos()).arg())
                     field.allies[idxThisR].set_dribbler_speed(15)

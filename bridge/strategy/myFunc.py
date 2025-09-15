@@ -49,47 +49,67 @@ def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, 
     #     nearestPoint = aux.nearest_point_on_circle(thisR.get_pos(), enemysGoalCenter, rCircle)
     #     actions[idFrom] = Actions.GoToPoint(nearestPoint, (aimForLookPos-thisR.get_pos()).arg())
 
-def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):#TODO solve problem: robot can prevent the score
-    
-    ballPos = field.ball.get_pos()
-    thisR = field.allies[idRWhichOpen]
-    thisRPos = thisR.get_pos()
-    pointsForOpening = []
-    vectFromBallToR = thisRPos-ballPos
-    vectFromBallToRUnity = vectFromBallToR.unity()
-    step = 100
-    for i in range(step, int(vectFromBallToR.mag()), step):
-        pointsForOpening.append(ballPos+(vectFromBallToRUnity*i))
-        field.strategy_image.draw_circle(ballPos+(vectFromBallToRUnity*i), (255, 255, 255))
-    
-    if vectFromBallToR.mag() < 700:
-        vectFromBallToR = vectFromBallToRUnity * 700
+def filterPointsForPass(field: fld.Field, points):
+    filteredPointsForPass = []
     enemysR = field.active_enemies(True)
-    rPreventPass = False
-    isBallOnOurPartOfField = ballPos.x*field.polarity > 0
+    ballPos = field.ball.get_pos()
 
-    for angel in range(-180, 180+1, 5):
-        angelInRad = angel/180*math.pi
-        maybePassPoint = aux.rotate(vectFromBallToR, angelInRad)+ballPos
-        field.strategy_image.draw_circle(maybePassPoint)
-        # pointForScore = findPointForScore(field, maybePassPoint)
-        for enemyR in enemysR:#see at distans from r to maybe pass point
+    for maybePassPoint in points:
+        rPreventPass = False
+        for enemyR in enemysR:#depenf from distans from r to maybe pass point
             if aux.dist(enemyR.get_pos(), ballPos) < 100: 
                 k = 1
             else:
                 k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
-            if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
+            # if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
+            if aux.is_point_inside_circle(maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k):
                 rPreventPass = True
-                field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), const.ROBOT_R*k)
-        # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
+                # field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), const.ROBOT_R*k)
+                field.strategy_image.draw_circle(maybePassPoint, (0, 0, 0))
+        # field.strategy_image.draw_line(points, ballPos, (200, 0, 0), 100)
         # field.strategy_image.draw_line(pointForScore, ballPos) 
         distToEnemyHull = aux.dist(maybePassPoint, aux.nearest_point_in_poly(maybePassPoint, field.enemy_goal.hull))
         distToAllyHull = aux.dist(maybePassPoint, aux.nearest_point_in_poly(maybePassPoint, field.ally_goal.hull))
-        if rPreventPass == False and aux.is_point_inside_poly(maybePassPoint, field.hull) and distToEnemyHull > 150 and distToAllyHull > 150:
-            pointsForOpening.append(maybePassPoint)
-            field.strategy_image.draw_circle(maybePassPoint)
-            # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
-        rPreventPass = False
+        pointForScore = findPointForScore(field, ballPos)
+        if pointForScore != None:
+            clPoint = aux.closest_point_on_line(ballPos, pointForScore, maybePassPoint)
+            thisRPreventScore = aux.dist(clPoint, maybePassPoint) < 150
+            if thisRPreventScore:
+                field.strategy_image.draw_circle(maybePassPoint, (200, 0, 255))
+        else:
+            thisRPreventScore = False
+        if rPreventPass == False and aux.is_point_inside_poly(maybePassPoint, field.hull) and distToEnemyHull > 150 and distToAllyHull > 150 and not thisRPreventScore:
+            filteredPointsForPass.append(maybePassPoint)
+            field.strategy_image.draw_circle(maybePassPoint, (0, 255, 0))
+            # field.strategy_image.draw_line(points, ballPos, (200, 0, 0), 100)
+    return filteredPointsForPass
+
+
+def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):  
+    ballPos = field.ball.get_pos()
+    thisR = field.allies[idRWhichOpen]
+    thisRPos = thisR.get_pos()
+    maybePointsForOpening = []
+    vectFromBallToR = thisRPos-ballPos
+    vectFromBallToRUnity = vectFromBallToR.unity()
+    step = 100
+    for i in range(step, int(vectFromBallToR.mag()), step):
+        maybePointsForOpening.append(ballPos+(vectFromBallToRUnity*i))
+        # field.strategy_image.draw_circle(ballPos+(vectFromBallToRUnity*i))
+    
+    if vectFromBallToR.mag() < 700:
+        vectFromBallToR = vectFromBallToRUnity * 700
+    isBallOnOurPartOfField = ballPos.x*field.polarity > 0
+
+    for angel in range(-180, 180+1, 5):
+        angelInRad = angel/180*math.pi
+        point = aux.rotate(vectFromBallToR, angelInRad)+ballPos
+        maybePointsForOpening.append(point)
+        # field.strategy_image.draw_circle(point)
+        # pointForScore = findPointForScore(field, maybePassPoint)
+
+    pointsForOpening = filterPointsForPass(field, maybePointsForOpening)
+        
     # print(pointsForOpening, field.ball.get_pos())
     if len(pointsForOpening) != 0:
         if isBallOnOurPartOfField:
@@ -97,7 +117,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):#TOD
         else:
             nearestPointForOpening = aux.find_nearest_point(field.enemy_goal.center, pointsForOpening)
         field.strategy_image.draw_circle(nearestPointForOpening, (0, 0, 255), 50)
-        field.strategy_image.draw_line(ballPos, nearestPointForOpening, (0, 0, 0), 20)
+        # field.strategy_image.draw_line(ballPos, nearestPointForOpening, (0, 0, 0), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(nearestPointForOpening, (ballPos-thisR.get_pos()).arg())    
 
 def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys, pointFrom, idFrom = const.GK):
@@ -250,7 +270,7 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5, reverse: bool = False):#WORK!!!
+def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5, reverse: bool = False):
     """
     Find the nearest point to a given point (center) from a list, optionally excluding some points.
 
