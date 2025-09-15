@@ -50,7 +50,6 @@ def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, 
     #     actions[idFrom] = Actions.GoToPoint(nearestPoint, (aimForLookPos-thisR.get_pos()).arg())
 
 def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
-    ballOnOurPartOfField = ballPos.x*field.polarity > 0
     
     ballPos = field.ball.get_pos()
     thisR = field.allies[idRWhichOpen]
@@ -59,6 +58,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     pointsForScore = []
     enemysR = field.active_enemies(True)
     rPreventPass = False
+    isBallOnOurPartOfField = ballPos.x*field.polarity > 0
 
     for angel in range(-180, 180+1, 5):
         angelInRad = angel/180*math.pi
@@ -78,7 +78,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         rPreventPass = False
     # print(pointsForScore, field.ball.get_pos())
     if len(pointsForScore) != 0:
-        if ballOnOurPartOfField:
+        if isBallOnOurPartOfField:
             nearestScorePoint = aux.find_nearest_point(thisRPos, pointsForScore)
         else:
             nearestScorePoint = aux.find_nearest_point(field.enemy_goal.center, pointsForScore)
