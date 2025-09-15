@@ -57,7 +57,7 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
     vectFromBallToR = thisRPos-field.ball.get_pos()
     if vectFromBallToR.mag() < 1000:
         vectFromBallToR = vectFromBallToR.unity() * 1000
-    pointsForScore = []
+    pointsForOpening = []
     enemysR = field.active_enemies(True)
     rPreventPass = False
     isBallOnOurPartOfField = ballPos.x*field.polarity > 0
@@ -74,19 +74,19 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
         # field.strategy_image.draw_line(pointForScore, ballPos)
         if rPreventPass == False and aux.is_point_inside_poly(maybePassPoint, field.hull) and not aux.is_point_inside_poly(maybePassPoint, field.enemy_goal.hull) and not aux.is_point_inside_poly(maybePassPoint, field.ally_goal.hull):
-            pointsForScore.append(maybePassPoint)
+            pointsForOpening.append(maybePassPoint)
             field.strategy_image.draw_circle(maybePassPoint)
             # field.strategy_image.draw_line(maybePassPoint, ballPos, (200, 0, 0), 100)
         rPreventPass = False
-    # print(pointsForScore, field.ball.get_pos())
-    if len(pointsForScore) != 0:
+    # print(pointsForOpening, field.ball.get_pos())
+    if len(pointsForOpening) != 0:
         if isBallOnOurPartOfField:
-            nearestScorePoint = aux.find_nearest_point(thisRPos, pointsForScore)
+            nearestPointForOpening = aux.find_nearest_point(thisRPos, pointsForOpening)
         else:
-            nearestScorePoint = aux.find_nearest_point(field.enemy_goal.center, pointsForScore)
-        field.strategy_image.draw_circle(nearestScorePoint, (0, 0, 255), 50)
-        field.strategy_image.draw_line(ballPos, nearestScorePoint, (0, 0, 0), 20)
-        actions[idRWhichOpen] = Actions.GoToPoint(nearestScorePoint, (ballPos-thisR.get_pos()).arg())    
+            nearestPointForOpening = aux.find_nearest_point(field.enemy_goal.center, pointsForOpening)
+        field.strategy_image.draw_circle(nearestPointForOpening, (0, 0, 255), 50)
+        field.strategy_image.draw_line(ballPos, nearestPointForOpening, (0, 0, 0), 20)
+        actions[idRWhichOpen] = Actions.GoToPoint(nearestPointForOpening, (ballPos-thisR.get_pos()).arg())    
 
 def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys, pointFrom, idFrom = const.GK):
     rToPass = None
@@ -158,7 +158,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
         else:
             field.strategy_image.send_telemetry("status pass", "dont have point")
     if actions[idFrom] == None:
-        actions[idFrom] = Actions.GoToPoint(field.allies[idFrom].get_pos(), (field.ball.get_pos()-field.allies[idFrom].get_pos()).arg())#TODO problem with angle
+        actions[idFrom] = Actions.GoToPoint(field.allies[idFrom].get_pos(), (field.ball.get_pos()-field.allies[idFrom].get_pos()).arg())
     if rToPass != None:
         return rToPass.r_id
     else:

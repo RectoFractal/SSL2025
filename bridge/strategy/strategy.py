@@ -266,7 +266,10 @@ class Strategy:
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
         play = True
         bothTeams = True
-        test = 0
+        test = False
+        if test != 0:
+            play = False
+            bothTeams = False
         if len(field.active_allies(True)) != 0 and len(field.active_enemies(True)) != 0:
             if field.ally_color == const.Color.BLUE:
                 # goToNearestScorePoint(field, actions, 0, 2)
@@ -283,23 +286,25 @@ class Strategy:
                     self.attacker(field, actions, 2, 0)
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
-                # for test pass
-                # openForPass(field, 2, actions)
-                if test == 1:
-                    nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
-                    otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE
-                    ballPos = field.ball.get_pos()
-                    # actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
-                    if self.idDoPass == None and self.idGettingPass == None:
-                        self.idDoPass = nearestRToBall.r_id
-                    if self.idDoPass != None:
-                        self.state = self.idDoPass
-                        self.doPass(field, actions, nearestRToBall.r_id)
-                    else:
-                        actions[self.state] = Actions.GoToPoint(field.allies[self.state].get_pos(), 0)
-                    if self.idGettingPass != None:
-                        self.gettingPass(field, actions, otherR.r_id)
-                    print(self.idDoPass, self.idGettingPass)
+                match test:
+                    case 1:
+                    # for test pass
+                        nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
+                        otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE
+                        ballPos = field.ball.get_pos()
+                        # actions[otherR.r_id] = Actions.GoToPoint(aux.Point(ballPos.x, ballPos.y *-1), (ballPos- field.allies[otherR.r_id].get_pos()).arg())
+                        if self.idDoPass == None and self.idGettingPass == None:
+                            self.idDoPass = nearestRToBall.r_id
+                        if self.idDoPass != None:
+                            self.state = self.idDoPass
+                            self.doPass(field, actions, nearestRToBall.r_id)
+                        else:
+                            actions[self.state] = Actions.GoToPoint(field.allies[self.state].get_pos(), 0)
+                        if self.idGettingPass != None:
+                            self.gettingPass(field, actions)
+                        print(self.idDoPass, self.idGettingPass)
+                    case 2:
+                        actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
 
                 # goToNearestScorePoint(field, actions, 0, 2)
                 # goToNearestScorePoint(field, actions, 2, 0)
@@ -370,7 +375,7 @@ class Strategy:
                 # ballPos = field.ball.get_pos()
                 # nearestEnemyR = fld.find_nearest_robot(ballPos, enemies)
                 # actions[2] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
-                # actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#TEST
+                # actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())
                 if play and bothTeams:
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
@@ -414,7 +419,7 @@ class Strategy:
         else:
             print("WE HAVENT ROBOTS")
 
-    def doPass(self, field, actions, idxThisR):
+    def doPass(self, field: fld.Field, actions, idxThisR):
         if field.is_ball_in(field.allies[self.idDoPass]):
             """do pass"""
             self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
@@ -425,14 +430,18 @@ class Strategy:
             self.idDoPass = None
             """pass done"""
 
-    def gettingPass(self, field: fld.Field, actions, idxThisR):
+    def gettingPass(self, field: fld.Field, actions):
         thisR = field.allies[self.idGettingPass]
         if self.idDoPass != None:
-            actions[self.idGettingPass] = Actions.GoToPoint(thisR.get_pos(), (field.allies[self.idDoPass].get_pos()-thisR.get_pos()).arg())
-        elif not field.is_ball_in(field.allies[self.idGettingPass]):
+            """pass not yet done"""
+            if actions[self.idGettingPass] == None:
+                actions[self.idGettingPass] = Actions.GoToPoint(thisR.get_pos(), (field.allies[self.idDoPass].get_pos()-thisR.get_pos()).arg())
+        elif not field.is_ball_in(field.allies[self.idGettingPass]) and field.ball.get_vel().mag() > 100:
             # field.strategy_image.send_telemetry("status pass", "getting pass")
             """getting pass"""
-            actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
+            # actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
+            # actions[self.idGettingPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[self.idGettingPass].get_pos()).arg())
+            actions[self.idGettingPass] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
         else:
             """get pass"""
             # field.strategy_image.send_telemetry("status pass", "get pass")
@@ -472,7 +481,7 @@ class Strategy:
                     else:
                         """if this r block maybe score, try grab ball"""
                         # nearestEnemyR = fld.find_nearest_robot(field.ball.get_pos(), enemys)
-                        actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())# GOOD
+                        actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
                 else:
                     """try replace ball from our part of field"""
                     #TODO need test
@@ -496,15 +505,26 @@ class Strategy:
                             else:
                                 actions[idxThisR] = Actions.Kick(field.enemies[const.ENEMY_GK].get_pos())
                 else:
-                    actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())#GOOD
+                    actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
         elif self.idDoPass == idxThisR:
             """if this R do pass"""
-            status = "1"
+            status = "if this R do pass"
             self.doPass(field, actions, idxThisR)
         elif idxThisR == self.idGettingPass:
             """if this R getting pass"""
-            status = "2"
-            self.gettingPass(field, actions, idxThisR)
+            status = "if this R getting pass"
+            self.gettingPass(field, actions)
+        elif self.idGettingPass != None:
+            """if we kick ball for pass, but ally dont yet catch him"""
+            status = "if we kick ball for pass, but ally dont yet catch him"
+            if ballPos.x*field.polarity > 0:
+                """if ball on our part of field"""
+                status += "if ball on our part of field"
+                openForPass(field, idxThisR, actions)
+            else:
+                """if ball not on our part of field"""
+                status += "if ball not on our part of field"
+                actions[idxThisR] = Actions.GoToPoint(thisRPos, (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
         elif actions[idxThisR] == None:
             """if we dont send command on this robot"""
             # status = "if we dont send command on this robot"
@@ -527,7 +547,8 @@ class Strategy:
                     else:
                         """if this r cant do score"""
                         status += "if this r cant do score"
-                        self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
+                        # self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
+                        self.idDoPass = idxThisR
                         # if pointForScoreForOtherAttacker != None:
                         #     """if other attacker can do score, pass other attacker"""
                         #     status = "if other attacker can do score, pass other attacker"
@@ -541,11 +562,11 @@ class Strategy:
                         """if this r is nearest to ball, but dont grab him, grab ball"""
                         status += "if this r is nearest to ball, but dont grab him, grab ball"
                         # actions[idxThisR] = Actions.BallGrab((field.ball.get_pos() - thisR.get_pos()).arg())
-                        actions[idxThisR] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#TEST
+                        actions[idxThisR] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())
                     else:
                         """do do pass and wait for result"""
                         status += "do do pass and wait for result"
-                        actions[idxThisR] = Actions.GoToPoint(aux.Point(0, 0), (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
+                        actions[idxThisR] = Actions.GoToPoint(thisRPos, (field.allies[idxOtherAttacker].get_pos()-thisR.get_pos()).arg())
             elif nearestRToBall == field.allies[idxOtherAttacker]:
                 """if other attacker have ball"""
                 status = "if other attacker have ball"
@@ -637,7 +658,8 @@ class Strategy:
                 if dist2BallFromThisR < dist2BallFromOtherR:
                     """if this attacker nearest to ball, take ball"""
                     status += "if this attacker nearest to ball, take ball"
-                    actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())#GOOD
+                    # actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())#GOOD
+                    actions[idxThisR] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
                 else:
                     """if nearest attacker for ball other, block maybe pass"""
                     status += "if nearest attacker for ball other, block maybe pass"
