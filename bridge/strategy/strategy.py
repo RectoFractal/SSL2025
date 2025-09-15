@@ -264,8 +264,9 @@ class Strategy:
 
         """test score goal"""
         # actions[0] = Actions.Kick(findPointForScore(field, field.allies[0].get_pos()))#WORK!!!
+        # goToNearestScorePoint(field, actions, 0, 2)
         play = True
-        bothTeams = True
+        bothTeams = False
         test = False
         if test != 0:
             play = False
@@ -484,7 +485,7 @@ class Strategy:
                         actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
                 else:
                     """try replace ball from our part of field"""
-                    #TODO need test
+                    #TODO need test in real
                     actions[idxThisR] = Actions.Kick(field.enemy_goal.center, is_upper=True)
             else:
                 """if ball on other part of field"""
