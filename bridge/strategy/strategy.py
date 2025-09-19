@@ -450,7 +450,7 @@ class Strategy:
             # self.idDoPass = self.idGettingPass
             self.idGettingPass = None
 
-    def attacker(self, field: fld.Field, actions: list[Action], idxThisR, idxOtherAttacker):
+    def attacker(self, field: fld.Field, actions: list[Action], idxThisR, idxOtherAttacker):#TODO: solve problem with situation, when ball between 2 robots
         status = None
         enemies = field.active_enemies(True)
         enemysRsWithoutGK = field.active_enemies()
