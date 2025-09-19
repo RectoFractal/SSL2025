@@ -1,12 +1,14 @@
 import math  # type: ignore
-from time import time  # type: ignore
+from time import time
+from typing import Optional  # type: ignore
 
 from bridge import const
 from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
 
-def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, idOtherAttacker: int | None):
+#TODO do comments
+def goToNearestScorePoint(field: fld.Field, actions: list[Optional[Action]], idFrom: int, idOtherAttacker: int | None) -> None:
     field.allies[idFrom].set_dribbler_speed(15)
     rCircle = 1100
     thisR = field.allies[idFrom]
@@ -49,7 +51,8 @@ def goToNearestScorePoint(field: fld.Field, actions: list[Action], idFrom: int, 
     #     nearestPoint = aux.nearest_point_on_circle(thisR.get_pos(), enemysGoalCenter, rCircle)
     #     actions[idFrom] = Actions.GoToPoint(nearestPoint, (aimForLookPos-thisR.get_pos()).arg())
 
-def filterPointsForPass(field: fld.Field, points):
+#TODO do comments
+def filterPointsForPass(field: fld.Field, points: list[aux.Point]) -> list[aux.Point]:
     filteredPointsForPass = []
     enemysR = field.active_enemies(True)
     ballPos = field.ball.get_pos()
@@ -59,7 +62,7 @@ def filterPointsForPass(field: fld.Field, points):
         rPreventPass = False
         for enemyR in enemysR:#depenf from distans from r to maybe pass point
             if aux.dist(enemyR.get_pos(), ballPos) < 100: 
-                k = 1
+                k = 1.0
             else:
                 k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
             # if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
@@ -84,8 +87,8 @@ def filterPointsForPass(field: fld.Field, points):
             # field.strategy_image.draw_line(points, ballPos, (200, 0, 0), 100)
     return filteredPointsForPass
 
-
-def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):  
+#TODO do comments
+def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Optional[Action]]) -> None:  
     ballPos = field.ball.get_pos()
     thisR = field.allies[idRWhichOpen]
     thisRPos = thisR.get_pos()
@@ -120,22 +123,23 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Action]):
         # field.strategy_image.draw_line(ballPos, nearestPointForOpening, (0, 0, 0), 20)
         actions[idRWhichOpen] = Actions.GoToPoint(nearestPointForOpening, (ballPos-thisR.get_pos()).arg())    
 
-def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys, pointFrom, idFrom = const.GK):
-    rToPass = None
+#TODO do comments
+def getPointToPassAndRToPass(field: fld.Field, actions: list[Optional[Action]], maybePassPoints: list[rbt.Robot], enemys: list[rbt.Robot], pointFrom: aux.Point, idFrom: int = const.GK) -> tuple[rbt.Robot | None, aux.Point | None]:
+    rToPass: Optional [rbt.Robot] = None
     pointToPass = None
     ballPos = field.ball.get_pos()
-    if idFrom != const.GK:
+    if len(maybePassPoints) == 1:
         if len(enemys) == 0:
-            rToPass = maybePassPoints
-            pointToPass = maybePassPoint.get_pos()
+            rToPass = maybePassPoints[0]
+            pointToPass = rToPass.get_pos()
         else:
-            nearestR = maybePassPoints
+            nearestR = maybePassPoints[0]
             # for nearestR in maybePassPoints:
             maybePassPoint = nearestR.get_pos()
 
             for enemyR in enemys:
                 if aux.dist(enemyR.get_pos(), ballPos) < 100: 
-                    k = 1
+                    k = 1.0
                 else:
                     k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
                     if k > 15:
@@ -150,8 +154,8 @@ def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys,
 
     else:
         if len(enemys) == 0:
-            rToPass = maybePassPoints
-            pointToPass = maybePassPoint.get_pos()
+            rToPass = maybePassPoints[0]
+            pointToPass = rToPass.get_pos()
         else:
             for nearestR in maybePassPoints:
                 if nearestR == field.allies[const.GK]:
@@ -168,9 +172,9 @@ def getPointToPassAndRToPass(field: fld.Field, actions, maybePassPoints, enemys,
                     break
             if rToPass == None:
                 openForPass(field, maybePassPoints[0].r_id, actions)
-    return [rToPass, pointToPass]
+    return (rToPass, pointToPass)
 
-def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
+def doPassNearAllly(field: fld.Field, actions: list[Optional[Action]], idFrom: int = const.GK) -> int | None:
     points = field.active_allies()
     exclude = [idFrom]
     # pointFrom = field.allies[idFrom].get_pos()
@@ -184,7 +188,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
             maybePassPoints = fld.find_nearest_robots(pointFrom, points)
             # maybePassPoints = maybePassPoints.remove(field.allies[idFrom])
         else:
-            maybePassPoints = fld.find_nearest_robot(pointFrom, points, avoid=exclude)
+            maybePassPoints = [fld.find_nearest_robot(pointFrom, points, avoid=exclude)]
         
         rToPass, pointToPass = getPointToPassAndRToPass(field, actions, maybePassPoints, enemys, pointFrom, idFrom)
 
@@ -204,7 +208,8 @@ def doPassNearAllly(field: fld.Field, actions: list[Action], idFrom = const.GK):
         return None
     # else: # consider this case
 
-def GK(field: fld.Field, actions: list[Action], oldGKState):
+#TODO do comments
+def GK(field: fld.Field, actions: list[Optional[Action]], oldGKState: str | None) -> str:#TODO change string variable on enum class
     GKState = None
 
     field.allies[const.GK].set_dribbler_speed(0)
@@ -262,18 +267,18 @@ def GK(field: fld.Field, actions: list[Action], oldGKState):
         # pointForGK = aux.nearest_point_on_poly(ballPos, field.ally_goal.hull)
         mostLikelyPointForScore = aux.closest_point_on_line(field.ally_goal.up, field.ally_goal.down, ballPos)
         pointForGK = aux.segment_poly_intersect(ballPos, mostLikelyPointForScore, field.ally_goal.hull)
-        field.strategy_image.draw_circle(pointForGK, color=(0, 0, 255), size_in_mms=50)
-        # print(pointForGK)
-        actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
-        field.allies[const.GK].set_dribbler_speed(15)#TODO check in real
-        # else:
+        if pointForGK != None:
+            field.strategy_image.draw_circle(pointForGK, color=(0, 0, 255), size_in_mms=50)
+            # print(pointForGK)
+            actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
+            field.allies[const.GK].set_dribbler_speed(15)#TODO check in real
+        else:
+            """err"""
+            print("ERROR IN GK")
     field.strategy_image.send_telemetry("GK State", GKState)
     return GKState
 
-def findPointForScore(field: fld.Field, pointFrom = None, draw: bool = True, k: int = 1.5, reverse: bool = False):
-    """
-    Find the nearest point to a given point (center) from a list, optionally excluding some points.
-    """
+def findPointForScore(field: fld.Field, pointFrom: None | aux.Point = None, draw: bool = True, k: float = 1.5, reverse: bool = False) -> aux.Point | None:#TODO do comments
     if pointFrom == None:
         pointFrom = field.ball.get_pos()
     qPoint = 8
