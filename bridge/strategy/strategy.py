@@ -67,9 +67,8 @@ class Strategy:
 
         return actions
 
-
-
-    def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:
+    def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:#TODO fix rotate with ball
+        print(field.game_state)
         play = True
         bothTeams = False
         test = False
@@ -79,19 +78,20 @@ class Strategy:
         if len(field.active_allies(True)) != 0:#if our Rs on field
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
-
+                idFirstAttacker = 0
+                idSecondAttacker = 7
                 if play:
-                    self.attacker(field, actions, 0, 2)
-                    self.attacker(field, actions, 2, 0)
+                    self.attacker(field, actions, idFirstAttacker, idSecondAttacker)
+                    self.attacker(field, actions, idSecondAttacker, idFirstAttacker)
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     # print("blue")
                     field.strategy_image.draw_circle(field.ally_goal.center, (0, 0, 255), 20)
                     print(len(field.active_allies(True)), len(field.active_enemies(True)))
-                    for r in field.active_allies(True):
-                        field.strategy_image.draw_circle(r.get_pos(), (0, 255, 0), 100)
-                    for r in field.active_enemies(True):
-                        field.strategy_image.draw_circle(r.get_pos(), (255, 255, 255), 100)
+                    # for r in field.active_allies(True):
+                    #     field.strategy_image.draw_circle(r.get_pos(), (0, 255, 0), 100)
+                    # for r in field.active_enemies(True):
+                    #     field.strategy_image.draw_circle(r.get_pos(), (255, 255, 255), 100)
                 match test:
                     case 1:
                     # for test pass
@@ -119,6 +119,9 @@ class Strategy:
                         print(self.idDoPass, self.idGettingPass)
                     case 2:
                         actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
+                    case 3:
+                        actions[1] = Actions.GoToPoint(aux.Point(0, 0), 0)
+                        print("1")
             else:
                 """code for yellow"""
                 if play and bothTeams:

@@ -6,7 +6,7 @@ from bridge import const
 from bridge.auxiliary import aux, fld, rbt  # type: ignore
 from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
-from myFunc import findPointForScore
+from bridge.strategy.myFunc import findPointForScore
 
 def TIMEOUT(field: fld.Field, actions: list[Optional[Action]],  we_active: bool) -> None:
     if len(field.active_allies(True)) > 0:

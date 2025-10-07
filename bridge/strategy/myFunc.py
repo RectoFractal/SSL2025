@@ -66,7 +66,7 @@ def filterPointsForPass(field: fld.Field, points: list[aux.Point]) -> list[aux.P
             else:
                 k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
             # if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
-            if aux.is_point_inside_circle(maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k):
+            if aux.is_point_inside_circle(maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k) or len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
                 rPreventPass = True
                 field.strategy_image.draw_circle(enemyR.get_pos(), (0, 255, 200), const.ROBOT_R*k)
                 field.strategy_image.draw_circle(maybePassPoint, (0, 0, 0))
@@ -197,7 +197,7 @@ def doPassNearAllly(field: fld.Field, actions: list[Optional[Action]], idFrom: i
             field.strategy_image.send_telemetry("status pass", "have point")
             # field.strategy_image.draw_line(pointFrom, pointToPass, color=(255, 0, 0))
             # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
-            actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)
+            actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)#TODO fix pass - ball go so slow
         else:
             field.strategy_image.send_telemetry("status pass", "dont have point")
     if actions[idFrom] == None:
