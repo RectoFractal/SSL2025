@@ -3,6 +3,7 @@
 # !v DEBUG ONLY
 import math  # type: ignore
 from bridge.strategy.myFunc import *
+import bridge.strategy.states as states
 from time import time  # type: ignore
 from typing import Optional
 
@@ -44,23 +45,23 @@ class Strategy:
             field.strategy_image.print(aux.Point(600, 780), text, need_to_scale=False)
         #TODO make game states
         match field.game_state:
-            case GameStates.RUN:
+            case GameStates.RUN: #OK
                 self.run(field, actions)
-            case GameStates.TIMEOUT:
-                pass
-            case GameStates.HALT:
+            case GameStates.TIMEOUT: #READY
+                states.TIMEOUT(field, actions, self.we_active)
+            case GameStates.HALT: #READY
                 return [None] * const.TEAM_ROBOTS_MAX_COUNT
-            case GameStates.PREPARE_PENALTY:
-                pass
-            case GameStates.PENALTY:
-                pass
-            case GameStates.PREPARE_KICKOFF:
-                pass
-            case GameStates.KICKOFF:
-                pass
-            case GameStates.FREE_KICK:
-                pass
-            case GameStates.STOP:
+            case GameStates.PREPARE_PENALTY: #READY
+                states.PREPARE_PENALTY(field, actions, self.we_active)
+            case GameStates.PENALTY:#READY
+                states.PENALTY(field, actions, self.we_active)
+            case GameStates.PREPARE_KICKOFF:#READY
+                states.PREPARE_KICKOFF(field, actions, self.we_active)
+            case GameStates.KICKOFF:#READY
+                states.KICKOFF(field, actions, self.we_active)
+            case GameStates.FREE_KICK: #READY
+                self.run(field, actions)
+            case GameStates.STOP: #READY
                 # The router will automatically prevent robots from getting too close to the ball
                 self.run(field, actions)
 
@@ -163,7 +164,6 @@ class Strategy:
             # self.idDoPass = idxPass
             self.idGettingPass = None
 
-    #TODO delete unused lines
     def attacker(self, field: fld.Field, actions: list[Optional[Action]], idxThisR: int, idxOtherAttacker: int) -> None:#TODO: solve problem with situation, when ball between 2 robots
         status = "Nothing"
         enemies = field.active_enemies(True)
