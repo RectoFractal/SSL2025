@@ -9,7 +9,7 @@ from bridge.router.base_actions import Action, Actions, KickActions  # type: ign
 
 #TODO do comments
 def goToNearestScorePoint(field: fld.Field, actions: list[Optional[Action]], idFrom: int, idOtherAttacker: int | None) -> None:
-    field.allies[idFrom].set_dribbler_speed(15)
+    # field.allies[idFrom].set_dribbler_speed(15)
     rCircle = 1100
     thisR = field.allies[idFrom]
     enemysGoalCenter = field.enemy_goal.center
@@ -64,7 +64,7 @@ def filterPointsForPass(field: fld.Field, points: list[aux.Point]) -> list[aux.P
             if aux.dist(enemyR.get_pos(), ballPos) < 100: 
                 k = 1.0
             else:
-                k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
+                k = 0.75 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
             # if len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
             if aux.is_point_inside_circle(maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k) or len(aux.line_circle_intersect(ballPos, maybePassPoint, enemyR.get_pos(), const.ROBOT_R*k, "S")) > 0:
                 rPreventPass = True
@@ -88,7 +88,7 @@ def filterPointsForPass(field: fld.Field, points: list[aux.Point]) -> list[aux.P
     return filteredPointsForPass
 
 #TODO do comments
-def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Optional[Action]]) -> None:  
+def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Optional[Action]]) -> None:
     ballPos = field.ball.get_pos()
     thisR = field.allies[idRWhichOpen]
     thisRPos = thisR.get_pos()
@@ -96,9 +96,9 @@ def openForPass(field: fld.Field, idRWhichOpen: int, actions: list[Optional[Acti
     vectFromBallToR = thisRPos-ballPos
     vectFromBallToRUnity = vectFromBallToR.unity()
     step = 200
-    for i in range(step, int(vectFromBallToR.mag()), step):
-        maybePointsForOpening.append(ballPos+(vectFromBallToRUnity*i))
-        # field.strategy_image.draw_circle(ballPos+(vectFromBallToRUnity*i))
+    # for i in range(step, int(vectFromBallToR.mag()), step):
+    #     maybePointsForOpening.append(ballPos+(vectFromBallToRUnity*i))
+    #     # field.strategy_image.draw_circle(ballPos+(vectFromBallToRUnity*i))
     
     if vectFromBallToR.mag() < 700:
         vectFromBallToR = vectFromBallToRUnity * 700
@@ -141,7 +141,7 @@ def getPointToPassAndRToPass(field: fld.Field, actions: list[Optional[Action]], 
                 if aux.dist(enemyR.get_pos(), ballPos) < 100: 
                     k = 1.0
                 else:
-                    k = 1 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
+                    k = 0.75 + 0.15 * aux.dist(enemyR.get_pos(), ballPos)/const.ROBOT_R
                     if k > 15:
                         k = 1
                 if aux.dist(aux.closest_point_on_line(pointFrom, maybePassPoint, enemyR.get_pos()), enemyR.get_pos()) < const.ROBOT_R*k:
@@ -199,13 +199,17 @@ def doPassNearAllly(field: fld.Field, actions: list[Optional[Action]], idFrom: i
             # field.strategy_image.draw_circle(pointToPass, color=(255, 0, 0), size_in_mms=1000)
             actions[idFrom] =  Actions.Kick(pointToPass, is_pass=True)#TODO fix pass - ball go so slow
         else:
-            field.strategy_image.send_telemetry("status pass", "dont have point")
+            field.strategy_image.send_telemetry("status pass", "dont have straight pass point")
+            if actions[maybePassPoints[0].r_id] != None:
+                field.strategy_image.draw_line(field.ball.get_pos(), actions[maybePassPoints[0].r_id].target_pos, (150, 0, 255), 20)
+                actions[idFrom] = Actions.Kick(actions[maybePassPoints[0].r_id].target_pos, is_pass=True)#a pass ahead
     if actions[idFrom] == None:
         actions[idFrom] = Actions.GoToPoint(field.allies[idFrom].get_pos(), (field.ball.get_pos()-field.allies[idFrom].get_pos()).arg())
-    if rToPass != None:
-        return rToPass.r_id
-    else:
-        return None
+    # if rToPass != None:
+    #     return rToPass.r_id
+    # else:
+    #     return None
+    return maybePassPoints[0].r_id
     # else: # consider this case
 
 #TODO do comments
@@ -271,7 +275,7 @@ def GK(field: fld.Field, actions: list[Optional[Action]], oldGKState: str | None
             field.strategy_image.draw_circle(pointForGK, color=(0, 0, 255), size_in_mms=50)
             # print(pointForGK)
             actions[const.GK] = Actions.GoToPointIgnore(pointForGK, (ballPos-GKPos).arg())
-            field.allies[const.GK].set_dribbler_speed(15)#TODO check in real
+            field.allies[const.GK].set_dribbler_speed(15)#TODO check in real we need it?
         else:
             """err"""
             print("ERROR IN GK")

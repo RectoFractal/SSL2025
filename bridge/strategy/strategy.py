@@ -45,32 +45,32 @@ class Strategy:
             field.strategy_image.print(aux.Point(600, 780), text, need_to_scale=False)
         #TODO make game states
         match field.game_state:
-            case GameStates.RUN: #OK
+            case GameStates.RUN:
                 self.run(field, actions)
-            case GameStates.TIMEOUT: #READY
+            case GameStates.TIMEOUT:
                 states.TIMEOUT(field, actions, self.we_active)
-            case GameStates.HALT: #READY
-                return [None] * const.TEAM_ROBOTS_MAX_COUNT
-            case GameStates.PREPARE_PENALTY: #READY
+            case GameStates.HALT:
+                return [None] * const.TEAM_ROBOTS_MAX_COUNT #GOOD
+            case GameStates.PREPARE_PENALTY:
                 states.PREPARE_PENALTY(field, actions, self.we_active)
-            case GameStates.PENALTY:#READY
+            case GameStates.PENALTY:
                 states.PENALTY(field, actions, self.we_active)
-            case GameStates.PREPARE_KICKOFF:#READY
+            case GameStates.PREPARE_KICKOFF:
                 states.PREPARE_KICKOFF(field, actions, self.we_active)
-            case GameStates.KICKOFF:#READY
+            case GameStates.KICKOFF:
                 states.KICKOFF(field, actions, self.we_active)
-            case GameStates.FREE_KICK: #READY
+            case GameStates.FREE_KICK: 
                 self.run(field, actions)
-            case GameStates.STOP: #READY
+            case GameStates.STOP:
                 # The router will automatically prevent robots from getting too close to the ball
                 self.run(field, actions)
 
         return actions
 
     def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:#TODO fix rotate with ball
-        print(field.game_state)
+        #TODO fix problem with that robots comes so close to each other,when they try take ball
         play = True
-        bothTeams = False
+        bothTeams = True
         test = False
         if test != 0:
             play = False
@@ -78,8 +78,9 @@ class Strategy:
         if len(field.active_allies(True)) != 0:#if our Rs on field
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
+                # print(field.game_state)#for real
                 idFirstAttacker = 0
-                idSecondAttacker = 7
+                idSecondAttacker = 2
                 if play:
                     self.attacker(field, actions, idFirstAttacker, idSecondAttacker)
                     self.attacker(field, actions, idSecondAttacker, idFirstAttacker)
@@ -87,7 +88,7 @@ class Strategy:
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     # print("blue")
                     field.strategy_image.draw_circle(field.ally_goal.center, (0, 0, 255), 20)
-                    print(len(field.active_allies(True)), len(field.active_enemies(True)))
+                    # print(len(field.active_allies(True)), len(field.active_enemies(True)))#for real
                     # for r in field.active_allies(True):
                     #     field.strategy_image.draw_circle(r.get_pos(), (0, 255, 0), 100)
                     # for r in field.active_enemies(True):
@@ -120,8 +121,8 @@ class Strategy:
                     case 2:
                         actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
                     case 3:
-                        actions[1] = Actions.GoToPoint(aux.Point(0, 0), 0)
-                        print("1")
+                        actions[1] = Actions.GoToPoint(aux.Point(2452, 3514), 0)
+                        print(actions[1].target_pos)
             else:
                 """code for yellow"""
                 if play and bothTeams:
@@ -129,7 +130,7 @@ class Strategy:
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     self.attacker(field, actions, 0, 2)
                     self.attacker(field, actions, 2, 0)
-                    print("yellow")
+                    # print("yellow")
                 # now = time()%8//4 # for change koef
                 # match now:
                 #     case 0:
@@ -395,7 +396,7 @@ class Strategy:
                     status += "if nearest attacker for ball other, block maybe pass"
                     # enemyRPos = field.allies[3].get_pos() # HARD CODE
                     # pointGo = aux.closest_point_on_line(enemyRPos, ballPos, rPos, "R")
-                    #TODO resolve problem with choise enemy, which we will block
+                    #TODO resolve problem with choose enemy, which we will block
                     pointGo = aux.point_on_line(ballPos, nearestEnemyR.get_pos(), 300)
                     actions[idxThisR] = Actions.GoToPoint(pointGo, (thisRPos-nearestEnemyR.get_pos()).arg())
                     field.allies[idxThisR].set_dribbler_speed(15)
