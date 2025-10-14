@@ -27,6 +27,9 @@ class Strategy:
         # self.idGettingPass: SupportsIndex = None
         self.idDoPass: Optional[int] = None
         self.GKLastState: Optional[str] = None
+        self.idFirstAttacker: int = 0
+        self.idSecondAttacker: int = 2
+        self.TimeWeTryDoPass: Optional[float] = None
 
     def process(self, field: fld.Field) -> list[Optional[Action]]:
         """Game State Management"""
@@ -49,16 +52,16 @@ class Strategy:
                 self.run(field, actions)
             case GameStates.TIMEOUT:
                 states.TIMEOUT(field, actions, self.we_active)
-            case GameStates.HALT:
-                return [None] * const.TEAM_ROBOTS_MAX_COUNT #GOOD
+            case GameStates.HALT:#GOOD
+                return [None] * const.TEAM_ROBOTS_MAX_COUNT
             case GameStates.PREPARE_PENALTY:
                 states.PREPARE_PENALTY(field, actions, self.we_active)
             case GameStates.PENALTY:
-                states.PENALTY(field, actions, self.we_active)
+                states.PENALTY(field, actions, self.we_active)# one r(our or not) kick ball from center of field, GK other team defend goal
             case GameStates.PREPARE_KICKOFF:
-                states.PREPARE_KICKOFF(field, actions, self.we_active)
+                states.PREPARE_KICKOFF(field, actions, self.we_active)#our Rs on our part of field
             case GameStates.KICKOFF:
-                states.KICKOFF(field, actions, self.we_active)
+                states.KICKOFF(field, actions, self.we_active)#our Rs on our part of field
             case GameStates.FREE_KICK: 
                 self.run(field, actions)
             case GameStates.STOP:
@@ -67,7 +70,7 @@ class Strategy:
 
         return actions
 
-    def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:#TODO fix rotate with ball
+    def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:#TODO fix rotate with ball, here's 2 options: rotate at arc, or slow rotate with ball
         #TODO fix problem with that robots comes so close to each other,when they try take ball
         play = True
         bothTeams = True
@@ -79,11 +82,10 @@ class Strategy:
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
                 # print(field.game_state)#for real
-                idFirstAttacker = 0
-                idSecondAttacker = 2
                 if play:
-                    self.attacker(field, actions, idFirstAttacker, idSecondAttacker)
-                    self.attacker(field, actions, idSecondAttacker, idFirstAttacker)
+                    # print(self.idDoPass)
+                    self.attacker(field, actions, self.idFirstAttacker, self.idSecondAttacker)
+                    self.attacker(field, actions, self.idSecondAttacker, self.idFirstAttacker)
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     # print("blue")
@@ -121,15 +123,16 @@ class Strategy:
                     case 2:
                         actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
                     case 3:
-                        actions[1] = Actions.GoToPoint(aux.Point(2452, 3514), 0)
-                        print(actions[1].target_pos)
+                        openForPass(field, 0, actions)
+                        # actions[1] = Actions.GoToPoint(aux.Point(2452, 3514), 0)
+                        # print(actions[1].target_pos)
             else:
                 """code for yellow"""
                 if play and bothTeams:
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
-                    self.attacker(field, actions, 0, 2)
-                    self.attacker(field, actions, 2, 0)
+                    self.attacker(field, actions, self.idFirstAttacker, self.idSecondAttacker)
+                    self.attacker(field, actions, self.idSecondAttacker, self.idFirstAttacker)
                     # print("yellow")
                 # now = time()%8//4 # for change koef
                 # match now:
@@ -146,7 +149,6 @@ class Strategy:
                 # actions[const.GK] = Actions.GoToPointIgnore(aux.Point(pointF.x+100, pointF.y), 0)
         else:
             print("WE HAVENT ROBOTS")
-       
 
     def gettingPass(self, field: fld.Field, actions: list[Optional[Action]]) -> None:
         idxPass: int = self.idGettingPass #type:ignore
@@ -155,7 +157,7 @@ class Strategy:
             """pass not yet done"""
             if actions[idxPass] == None:
                 actions[idxPass] = Actions.GoToPoint(thisR.get_pos(), (field.allies[self.idDoPass].get_pos()-thisR.get_pos()).arg())
-        elif not field.is_ball_in(field.allies[idxPass]) and field.ball.get_vel().mag() > 100:
+        elif not field.is_ball_in(field.allies[idxPass]) and field.is_ball_moves():
             # field.strategy_image.send_telemetry("status pass", "getting pass")
             """getting pass"""
             # actions[idxPass] = Actions.BallGrab((field.ball.get_pos()-field.allies[idxPass].get_pos()).arg())
@@ -226,18 +228,23 @@ class Strategy:
                 else:
                     actions[idxThisR] = Actions.BallGrab((nearestEnemyR.get_pos()-ballPos).arg())
         # elif len(enemies) == 0:
-        elif self.idDoPass == idxThisR:
+        elif self.idDoPass == idxThisR and aux.dist(ballPos, thisRPos) < 200:
             """if this R do pass"""
             status = "if this R do pass"
             if field.is_ball_in(field.allies[self.idDoPass]):
                 """do pass"""
+                # print("do pass")
                 self.idGettingPass = doPassNearAllly(field, actions, idxThisR)
             elif self.idGettingPass == None:
                 """grab ball"""
+                # print("gab ball")
                 actions[self.idDoPass] = Actions.BallGrab((field.ball.get_pos() - field.allies[self.idDoPass].get_pos()).arg())  
             else:
                 self.idDoPass = None
+                # print("pass done")
                 """pass done"""
+        elif self.idDoPass == idxThisR and aux.dist(ballPos, thisRPos) >= 200:
+            self.idDoPass = None
         elif idxThisR == self.idGettingPass:
             """if this R getting pass"""
             status = "if this R getting pass"
