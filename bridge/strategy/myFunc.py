@@ -6,6 +6,30 @@ from bridge import const
 from bridge.auxiliary import aux, fld, rbt  # type: ignore
 # from bridge.const import State as GameStates
 from bridge.router.base_actions import Action, Actions, KickActions  # type: ignore
+from enum import Enum
+
+class whatWeDoStates(Enum):
+    """Класс с типо запускаемого нами кода"""
+
+    Play = 0
+    BothPlay = 1
+    TestPass = 2
+    SimpleTest = 3
+    TestRotateWithBall = 4
+
+# class State(Enum):#do GK
+#     """Класс с состояниями игры"""
+
+#     HALT = 0
+#     TIMEOUT = 1
+#     STOP = 2
+#     PREPARE_KICKOFF = 3
+#     BALL_PLACEMENT = 4
+#     PREPARE_PENALTY = 5
+#     KICKOFF = 6
+#     FREE_KICK = 7
+#     PENALTY = 8
+#     RUN = 9
 
 def getKoefForEnemysRobotR(ballPos: aux.Point, enemyRPos: aux.Point) -> float:
     if aux.dist(enemyRPos, ballPos) < 100: 

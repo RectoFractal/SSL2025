@@ -226,7 +226,7 @@ class Actions:
             self.kick_args = (target_pos, voltage, is_pass, is_upper)
 
         def use_behavior_of(self, domain: ActionDomain, current_action: ActionValues) -> list["Action"]:
-            return [KickActions.delayedKick(*self.kick_args)]
+            return [KickActions.delayedSLowKick(*self.kick_args)]
 
 
 class KickActions:
@@ -276,6 +276,20 @@ class KickActions:
             ]
 
             return actions
+        
+    class delayedSLowKick(Kick):
+        
+        def use_behavior_of(self, domain: ActionDomain, current_action: ActionValues) -> list["Action"]:
+            kick_angle = aux.angle_to_point(domain.field.ball.get_pos(), self.target_pos)
+
+            actions = [
+                Actions.BallGrab(kick_angle),
+                DumbActions.slowRotateWithBall(target_angle = kick_angle),
+                DumbActions.delayedShootAction(kick_angle, self.is_upper),
+                DumbActions.ControlVoltageAction(domain.field.ball.get_pos(), self.voltage, self.pass_pos),
+            ]
+
+            return actions
 
 class DumbActions:
     """User-unavailable actions, are used in Actions"""
@@ -299,7 +313,7 @@ class DumbActions:
         def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
             current_action.auto_kick = self.autokick
 
-    timer1: Optional[float] = None
+    timer1: float = time()+10**10
     oldAligned: bool = False
 
     class delayedShootAction(Action):
@@ -316,18 +330,21 @@ class DumbActions:
                 if self.angle_bounds is not None
                 else domain.robot.is_kick_aligned_by_angle(self.target_angle)
             )
+            print("is_aligned =", is_aligned)
             if is_aligned and not DumbActions.oldAligned:
                 DumbActions.oldAligned = True
                 DumbActions.timer1 = time()
             if not is_aligned:
-                DumbActions.timer1 = None
+                DumbActions.timer1 = time()+10**10
                 DumbActions.oldAligned = False
+            print(time()-DumbActions.timer1>0.1)
             return domain.field.is_ball_in(domain.robot) and is_aligned and time()-DumbActions.timer1>0.1
 
         def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
-            DumbActions.timer1 = None
-            DumbActions.oldAligned = False
+            # DumbActions.timer1 = time()+10**10
+            # DumbActions.oldAligned = False
             current_action.auto_kick = self.autokick
+            print("shoot")
 
     class ControlVoltageAction(Action):
         """Control voltage before shooting"""
@@ -379,6 +396,27 @@ class DumbActions:
         def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
             limit_action(domain, current_action, self.limit)
 
+    class slowRotateWithBall(Action):
+        def __init__(
+            self, target_angle: float, angle_bounds: float = math.pi/36
+        ) -> None:
+            self.target_angle = target_angle
+            self.angle_bounds = angle_bounds
+            
+
+        def is_defined(self, domain: ActionDomain) -> bool:
+            return domain.field.is_ball_in(domain.robot)
+
+        def behavior(self, domain: ActionDomain, current_action: ActionValues) -> None:
+            current_action.vel = aux.Point(0, 0)
+            print("slow")
+            if aux.wind_down_angle(domain.robot.get_angle() - self.target_angle) > self.angle_bounds:    
+                current_action.angle = -0.4
+            elif aux.wind_down_angle(domain.robot.get_angle() - self.target_angle) < -self.angle_bounds:    
+                current_action.angle = 0.4
+            else:
+                current_action.angle = 0
+            current_action.beep=1
 
 def get_pass_voltage(length: float) -> int:
     """Calc voltage for pass by length"""

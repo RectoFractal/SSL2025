@@ -27,9 +27,10 @@ class Strategy:
         # self.idGettingPass: SupportsIndex = None
         self.idDoPass: Optional[int] = None
         self.GKLastState: Optional[str] = None
-        self.idFirstAttacker: int = 0
-        self.idSecondAttacker: int = 2
-        self.TimeWeTryDoPass: Optional[float] = None
+        self.idFirstAttacker: int = 7
+        self.idSecondAttacker: int = 6
+        # self.TimeWeTryDoPass: Optional[float] = None
+        self.whatWeDoAtThisRun: whatWeDoStates = whatWeDoStates.TestRotateWithBall
 
     def process(self, field: fld.Field) -> list[Optional[Action]]:
         """Game State Management"""
@@ -72,17 +73,11 @@ class Strategy:
 
     def run(self, field: fld.Field, actions: list[Optional[Action]]) -> None:#TODO fix rotate with ball, here's 2 options: rotate at arc, or slow rotate with ball
         #TODO fix problem with that robots comes so close to each other,when they try take ball
-        play = True
-        bothTeams = True
-        test = False
-        if test != 0:
-            play = False
-            bothTeams = False
         if len(field.active_allies(True)) != 0:#if our Rs on field
             if field.ally_color == const.Color.BLUE:
                 """code for blue"""
                 # print(field.game_state)#for real
-                if play:
+                if self.whatWeDoAtThisRun == whatWeDoStates.Play or self.whatWeDoAtThisRun == whatWeDoStates.BothPlay:
                     # print(self.idDoPass)
                     self.attacker(field, actions, self.idFirstAttacker, self.idSecondAttacker)
                     self.attacker(field, actions, self.idSecondAttacker, self.idFirstAttacker)
@@ -95,8 +90,9 @@ class Strategy:
                     #     field.strategy_image.draw_circle(r.get_pos(), (0, 255, 0), 100)
                     # for r in field.active_enemies(True):
                     #     field.strategy_image.draw_circle(r.get_pos(), (255, 255, 255), 100)
-                match test:
-                    case 1:
+                match self.whatWeDoAtThisRun:
+
+                    case whatWeDoStates.TestPass:
                     # for test pass
                         nearestRToBall = fld.find_nearest_robot(field.ball.get_pos(), field.active_allies())
                         otherR = field.allies[2*(nearestRToBall.r_id != 2)]#HARD CODE
@@ -120,15 +116,27 @@ class Strategy:
                         if self.idGettingPass != None:
                             self.gettingPass(field, actions)
                         print(self.idDoPass, self.idGettingPass)
-                    case 2:
+
+                    case whatWeDoStates.SimpleTest:
                         actions[0] = Actions.BallGrab((-field.ball.get_pos() + field.enemy_goal.center).arg())#work
-                    case 3:
-                        openForPass(field, 0, actions)
-                        # actions[1] = Actions.GoToPoint(aux.Point(2452, 3514), 0)
-                        # print(actions[1].target_pos)
+
+                    case whatWeDoStates.TestRotateWithBall:
+                        thisR = field.allies[self.idFirstAttacker]
+                        if field.is_ball_in(thisR):
+                            pointForScore = findPointForScore(field, thisR.get_pos())
+                            if pointForScore != None:
+                                actions[self.idFirstAttacker] = Actions.Kick(pointForScore)
+                            else:
+                                # goToNearestScorePoint(field, actions, self.idFirstAttacker, 0)
+                                field.strategy_image.draw_line(field.enemy_goal.up, field.enemy_goal.down, (0, 0, 0), 30)
+                        else:
+                            actions[self.idFirstAttacker] = Actions.BallGrab(math.pi/2)
+                        # field.strategy_image.send_telemetry("Curr Action", str(actions[self.idFirstAttacker]))
+                        # print(actions[self.idFirstAttacker])
+
             else:
                 """code for yellow"""
-                if play and bothTeams:
+                if self.whatWeDoAtThisRun == whatWeDoStates.BothPlay:
                     if field.allies[const.GK].is_used():
                         self.GKLastState = GK(field, actions, self.GKLastState) 
                     self.attacker(field, actions, self.idFirstAttacker, self.idSecondAttacker)
